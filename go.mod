@@ -1,4 +1,4 @@
-module github.com/changchanghwang/wdtb_back
+module github.com/changchanghwang/wdwb_back
 
 go 1.24.0
 

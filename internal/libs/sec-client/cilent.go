@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	applicationError "github.com/changchanghwang/wdtb_back/pkg/application-error"
+	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 )
 
 type SecClient struct {

@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/changchanghwang/wdtb_back/internal/libs/ddd"
+	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	"github.com/google/uuid"
 )
 
