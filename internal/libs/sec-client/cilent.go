@@ -1,6 +1,7 @@
 package secClient
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -8,70 +9,59 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
+	"golang.org/x/net/html/charset"
 )
 
 type SecClient struct {
-	client *http.Client
-}
-
-type UserAgentTransport struct {
-	Transport http.RoundTripper
-	UserAgent string
-}
-
-func (t *UserAgentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", t.UserAgent)
-	return t.Transport.RoundTrip(req)
+	sec *secHttpClient
 }
 
 func New() *SecClient {
-	transport := &UserAgentTransport{
-		Transport: http.DefaultTransport,
-		UserAgent: "wdwb/1.0 (window95pill@gmail.com)",
-	}
-
-	httpClient := &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: transport,
-	}
+	secHttpClient := newSecHttpClient(10, 9)
 
 	return &SecClient{
-		client: httpClient,
+		sec: secHttpClient,
 	}
 }
 
-func (s *SecClient) GetFilings(cik string) ([]*FilingDTO, error) {
+func (s *SecClient) GetCompany(cik string) (*CompanyDto, error) {
 	if len(cik) < 10 {
 		cik = strings.Repeat("0", 10-len(cik)) + cik
 	} else if len(cik) > 10 {
 		return nil, applicationError.New(http.StatusBadRequest, fmt.Sprintf("CIK must be 10 digits : %s", cik), "")
 	}
 
-	resp, err := s.client.Get(fmt.Sprintf("https://data.sec.gov/submissions/CIK%s.json", cik))
+	resp, err := s.sec.Get(fmt.Sprintf("https://data.sec.gov/submissions/CIK%s.json", cik))
 	if err != nil {
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to get filings for CIK: %s\n%v", cik, err.Error()), "")
 	}
 	defer resp.Body.Close()
 
-	var data struct {
-		CIK     string `json:"cik"`
-		Name    string `json:"name"`
-		Filings struct {
-			Recent struct {
-				AccessionNumber []string `json:"accessionNumber"`
-				FilingDate      []string `json:"filingDate"`
-				ReportDate      []string `json:"reportDate"`
-				Form            []string `json:"form"`
-			} `json:"recent"`
-		} `json:"filings"`
-	}
+	var data *CompanyDto
 
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to decode response body for CIK: %s\n%v", cik, err.Error()), "")
+	}
+
+	symbols := make([]symbol, 0, len(data.Tickers))
+	for i, ticker := range data.Tickers {
+		symbols = append(symbols, symbol{
+			Ticker:   ticker,
+			Exchange: data.Exchanges[i],
+		})
+	}
+	data.Symbols = symbols
+
+	return data, nil
+}
+
+func (s *SecClient) GetFilings(cik string) ([]*FilingDTO, error) {
+	data, err := s.GetCompany(cik)
+	if err != nil {
+		return nil, applicationError.Wrap(err)
 	}
 
 	filingsMap := make(map[string]*FilingDTO)
@@ -99,81 +89,71 @@ func (s *SecClient) GetFilings(cik string) ([]*FilingDTO, error) {
 		filings = append(filings, filing)
 	}
 
-	chunkSize := 5
-	for i := 0; i < len(filings); i += chunkSize {
-		end := i + chunkSize
-		if end > len(filings) {
-			end = len(filings)
+	for _, filing := range filings {
+		baseUrl := fmt.Sprintf("https://www.sec.gov/Archives/edgar/data/%s/%s", cik, strings.ReplaceAll(filing.AccessionNumber, "-", ""))
+
+		res, err := s.sec.Get(fmt.Sprintf("%s/%s-index.html", baseUrl, filing.AccessionNumber))
+		if err != nil {
+			return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to get info table link for CIK: %s\n%v", cik, err.Error()), "")
+		}
+		defer res.Body.Close()
+
+		doc, err := goquery.NewDocumentFromReader(res.Body)
+		if err != nil {
+			return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to parse response body for CIK: %s\n%v", cik, err.Error()), "")
 		}
 
-		filingsChunk := filings[i:end]
-		for _, filing := range filingsChunk {
-			baseUrl := fmt.Sprintf("https://www.sec.gov/Archives/edgar/data/%s/%s", cik, strings.ReplaceAll(filing.AccessionNumber, "-", ""))
+		var infoTableLink string
+		var nonPrimaryDocLink string
+		var foundInfoTable bool
 
-			res, err := s.client.Get(fmt.Sprintf("%s/%s-index.html", baseUrl, filing.AccessionNumber))
-			if err != nil {
-				return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to get info table link for CIK: %s\n%v", cik, err.Error()), "")
-			}
-			defer res.Body.Close()
-
-			doc, err := goquery.NewDocumentFromReader(res.Body)
-			if err != nil {
-				return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to parse response body for CIK: %s\n%v", cik, err.Error()), "")
+		doc.Find("table.tableFile tr").Each(func(i int, s *goquery.Selection) {
+			if i == 0 {
+				return
 			}
 
-			var infoTableLink string
-			var nonPrimaryDocLink string
-			var foundInfoTable bool
+			if s.Text() != "" && strings.Contains(s.Text(), "Complete submission text file") {
+				return
+			}
 
-			doc.Find("table.tableFile tr").Each(func(i int, s *goquery.Selection) {
-				if i == 0 {
-					return
-				}
-
-				if s.Text() != "" && strings.Contains(s.Text(), "Complete submission text file") {
-					return
-				}
-
-				rowText := s.Text()
-				if strings.Contains(rowText, "INFORMATION TABLE") {
-					if !foundInfoTable {
-						link, exists := s.Find("a").Attr("href")
-						if exists {
-							infoTableLink = link
-							foundInfoTable = true
-						}
+			rowText := s.Text()
+			if strings.Contains(rowText, "INFORMATION TABLE") {
+				if !foundInfoTable {
+					link, exists := s.Find("a").Attr("href")
+					if exists {
+						infoTableLink = link
+						foundInfoTable = true
 					}
 				}
-
-				if nonPrimaryDocLink == "" {
-					s.Find("a").Each(func(j int, a *goquery.Selection) {
-						linkText := a.Text()
-						link, exists := a.Attr("href")
-						if exists && !strings.Contains(linkText, "primary_doc") {
-							nonPrimaryDocLink = link
-						}
-					})
-				}
-			})
-
-			if foundInfoTable {
-				splittedFoundInfoTableLink := strings.Split(infoTableLink, "/")
-				filing.InfoTableLink = fmt.Sprintf("%s/%s", baseUrl, splittedFoundInfoTableLink[len(splittedFoundInfoTableLink)-1])
-			} else if nonPrimaryDocLink != "" {
-				splittedNonPrimaryDocLink := strings.Split(nonPrimaryDocLink, "/")
-				filing.InfoTableLink = fmt.Sprintf("%s/%s", baseUrl, splittedNonPrimaryDocLink[len(splittedNonPrimaryDocLink)-1])
-			} else {
-				return nil, fmt.Errorf("조건에 맞는 파일 링크를 찾을 수 없습니다")
 			}
+
+			if nonPrimaryDocLink == "" {
+				s.Find("a").Each(func(j int, a *goquery.Selection) {
+					linkText := a.Text()
+					link, exists := a.Attr("href")
+					if exists && !strings.Contains(linkText, "primary_doc") {
+						nonPrimaryDocLink = link
+					}
+				})
+			}
+		})
+
+		if foundInfoTable {
+			splittedFoundInfoTableLink := strings.Split(infoTableLink, "/")
+			filing.InfoTableLink = fmt.Sprintf("%s/%s", baseUrl, splittedFoundInfoTableLink[len(splittedFoundInfoTableLink)-1])
+		} else if nonPrimaryDocLink != "" {
+			splittedNonPrimaryDocLink := strings.Split(nonPrimaryDocLink, "/")
+			filing.InfoTableLink = fmt.Sprintf("%s/%s", baseUrl, splittedNonPrimaryDocLink[len(splittedNonPrimaryDocLink)-1])
+		} else {
+			return nil, fmt.Errorf("조건에 맞는 파일 링크를 찾을 수 없습니다")
 		}
-		time.Sleep(1 * time.Second)
 	}
 
 	return filings, nil
 }
 
 func (s *SecClient) ParseInfoTable(url string) ([]HoldingDto, error) {
-	resp, err := s.client.Get(url)
+	resp, err := s.sec.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -185,11 +165,11 @@ func (s *SecClient) ParseInfoTable(url string) ([]HoldingDto, error) {
 	}
 
 	if strings.Contains(url, ".xml") {
-		return s.parseXml(body)
+		return s.parseXml(body, url)
 	}
 
 	if strings.Contains(url, ".txt") {
-		return s.parseText(body)
+		return s.parseText(body, url)
 	}
 
 	return nil, applicationError.New(http.StatusBadRequest, "Invalid URL", "")
@@ -221,12 +201,16 @@ type VotingAuthority struct {
 	None   string `xml:"None,ns1:None"`
 }
 
-func (s *SecClient) parseXml(infoTable []byte) ([]HoldingDto, error) {
+func (s *SecClient) parseXml(infoTable []byte, url string) ([]HoldingDto, error) {
 	var informationTable InformationTable
 
-	err := xml.Unmarshal(infoTable, &informationTable)
+	decoder := xml.NewDecoder(bytes.NewReader(infoTable))
+	decoder.Strict = false
+	decoder.CharsetReader = charset.NewReaderLabel
+
+	err := decoder.Decode(&informationTable)
 	if err != nil {
-		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("XML 파싱 오류: %v", err.Error()), "")
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("error with parsing xml url: %s\n%v", url, err.Error()), "")
 	}
 
 	holdings := make([]HoldingDto, 0, len(informationTable.InfoTable))
@@ -242,16 +226,17 @@ func (s *SecClient) parseXml(infoTable []byte) ([]HoldingDto, error) {
 		}
 
 		holdings = append(holdings, HoldingDto{
-			CompanyName: infoTable.NameOfIssuer,
-			Cusip:       infoTable.Cusip,
-			Value:       value,
-			StockShares: stockShares,
+			CompanyName:  infoTable.NameOfIssuer,
+			Cusip:        infoTable.Cusip,
+			TitleOfClass: infoTable.TitleOfClass,
+			Value:        value,
+			StockShares:  stockShares,
 		})
 	}
 	return holdings, nil
 }
 
-func (s *SecClient) parseText(infoTable []byte) ([]HoldingDto, error) {
+func (s *SecClient) parseText(infoTable []byte, url string) ([]HoldingDto, error) {
 	textData := string(infoTable)
 	lines := strings.Split(textData, "\n")
 
@@ -292,12 +277,12 @@ func (s *SecClient) parseText(infoTable []byte) ([]HoldingDto, error) {
 	}
 
 	if headerLine == "" || !dashedFound {
-		return nil, fmt.Errorf("테이블 헤더나 dashed line을 찾지 못했습니다")
+		return nil, fmt.Errorf("error with parsing text url: %s\n%v", url, "")
 	}
 
 	boundaries := computeBoundaries(dashedLine)
 	if len(boundaries) == 0 {
-		return nil, fmt.Errorf("dashed line으로부터 필드 경계를 계산할 수 없습니다")
+		return nil, fmt.Errorf("error with parsing text url: %s\n%v", url, "")
 	}
 
 	var holdings []HoldingDto
@@ -322,6 +307,7 @@ func (s *SecClient) parseText(infoTable []byte) ([]HoldingDto, error) {
 		}
 
 		companyName := fields[0]
+		titleOfClass := fields[1]
 		cusip := fields[2]
 		valueStr := fields[3]
 		sharesStr := fields[4]
@@ -341,10 +327,11 @@ func (s *SecClient) parseText(infoTable []byte) ([]HoldingDto, error) {
 		}
 
 		holdings = append(holdings, HoldingDto{
-			CompanyName: companyName,
-			Cusip:       cusip,
-			Value:       value,
-			StockShares: shares,
+			CompanyName:  companyName,
+			TitleOfClass: titleOfClass,
+			Cusip:        cusip,
+			Value:        value,
+			StockShares:  shares,
 		})
 	}
 

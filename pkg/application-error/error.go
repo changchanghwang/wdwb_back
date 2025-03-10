@@ -16,7 +16,7 @@ type httpError struct {
 func New(status int, msg, clientMsg string) *httpError {
 	clientMessage := clientMsg
 	if clientMessage == "" {
-		clientMessage = msg
+		clientMessage = getDefaultErrorMessage(status, msg)
 	}
 	err := httpError{
 		Message:       msg,
@@ -36,7 +36,7 @@ var funcInfoFormat = "Stack Trace: {%s:%d} [%s]"
 func getFuncInfo(pc uintptr, file string, line int) string {
 	f := runtime.FuncForPC(pc)
 	if f == nil {
-		return fmt.Sprintf(funcInfoFormat, file, line, "unknwon")
+		return fmt.Sprintf(funcInfoFormat, file, line, "unknown")
 	}
 	return fmt.Sprintf(funcInfoFormat, file, line, f.Name())
 }
