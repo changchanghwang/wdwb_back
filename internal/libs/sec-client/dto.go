@@ -1,9 +1,11 @@
 package secClient
 
+import calendarDate "github.com/changchanghwang/wdwb_back/internal/libs/calendar-date"
+
 type FilingDTO struct {
 	AccessionNumber string
-	FilingDate      string
-	ReportDate      string
+	FilingDate      calendarDate.CalendarDate
+	ReportDate      calendarDate.CalendarDate
 	Form            string
 	InfoTableLink   string
 }
@@ -26,10 +28,10 @@ type CompanyDto struct {
 	Exchanges      []string `json:"exchanges"`
 	Filings        struct {
 		Recent struct {
-			AccessionNumber []string `json:"accessionNumber"`
-			FilingDate      []string `json:"filingDate"`
-			ReportDate      []string `json:"reportDate"`
-			Form            []string `json:"form"`
+			AccessionNumber []string                    `json:"accessionNumber"`
+			FilingDate      []calendarDate.CalendarDate `json:"filingDate"`
+			ReportDate      []calendarDate.CalendarDate `json:"reportDate"`
+			Form            []string                    `json:"form"`
 		} `json:"recent"`
 	} `json:"filings"`
 	Symbols []symbol

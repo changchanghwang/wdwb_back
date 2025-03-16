@@ -10,9 +10,14 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/db"
 	"github.com/changchanghwang/wdwb_back/internal/libs/sec-client"
 	"github.com/changchanghwang/wdwb_back/internal/server"
+	infrastructure3 "github.com/changchanghwang/wdwb_back/internal/services/filings/infrastructure"
+	infrastructure4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
+	infrastructure2 "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
+	application2 "github.com/changchanghwang/wdwb_back/internal/services/sync/application"
+	presentation2 "github.com/changchanghwang/wdwb_back/internal/services/sync/presentation"
 )
 
 // Injectors from wire.go:
@@ -23,6 +28,11 @@ func InitializeServer() (*server.Server, error) {
 	secClientSecClient := secClient.New()
 	stockService := application.New(stockRepository, gormDB, secClientSecClient)
 	stockController := presentation.New(stockService)
-	serverServer := server.New(stockController)
+	investorRepository := infrastructure2.New(gormDB)
+	filingRepository := infrastructure3.New(gormDB)
+	holdingRepository := infrastructure4.New(gormDB)
+	syncService := application2.New(secClientSecClient, investorRepository, filingRepository, stockRepository, holdingRepository, gormDB)
+	syncController := presentation2.New(syncService)
+	serverServer := server.New(stockController, syncController)
 	return serverServer, nil
 }
