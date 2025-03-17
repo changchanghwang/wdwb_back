@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"database/sql/driver"
+
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 )
 
@@ -54,6 +56,7 @@ func (d CalendarDate) Quarter() (int, error) {
 
 	return quarterMap[month], nil
 }
+
 func (d *CalendarDate) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -83,4 +86,48 @@ func (d CalendarDate) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(string(d))
+}
+
+// Scan implements the sql.Scanner interface for CalendarDate.
+// It converts a database value (typically a time.Time) into a CalendarDate.
+func (d *CalendarDate) Scan(value interface{}) error {
+	if value == nil {
+		*d = ""
+		return nil
+	}
+
+	switch v := value.(type) {
+	case time.Time:
+		*d = CalendarDate(v.Format(calendarDateFormat))
+		return nil
+	case []byte:
+		str := string(v)
+		if _, err := time.Parse(calendarDateFormat, str); err != nil {
+			return fmt.Errorf("invalid date format: %v", err)
+		}
+		*d = CalendarDate(str)
+		return nil
+	case string:
+		if _, err := time.Parse(calendarDateFormat, v); err != nil {
+			return fmt.Errorf("invalid date format: %v", err)
+		}
+		*d = CalendarDate(v)
+		return nil
+	default:
+		return fmt.Errorf("unsupported type %T for CalendarDate", value)
+	}
+}
+
+// Value implements the driver.Valuer interface for CalendarDate.
+// It converts a CalendarDate into a format that can be stored in the database.
+func (d CalendarDate) Value() (driver.Value, error) {
+	if d == "" {
+		return nil, nil
+	}
+
+	t, err := time.Parse(calendarDateFormat, string(d))
+	if err != nil {
+		return nil, fmt.Errorf("invalid date format: %v", err)
+	}
+	return t, nil
 }

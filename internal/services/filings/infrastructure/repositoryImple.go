@@ -39,6 +39,10 @@ func (r *FilingRepositoryImpl) Save(db *gorm.DB, filings []*domain.Filing) error
 		db = r.manager
 	}
 
+	if len(filings) == 0 {
+		return nil
+	}
+
 	if err := db.Save(filings).Error; err != nil {
 		return applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to save. %s", err.Error()), "")
 	}
