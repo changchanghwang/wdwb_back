@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/changchanghwang/wdwb_back/internal/middlewares"
 	stocks "github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
+	sync "github.com/changchanghwang/wdwb_back/internal/services/sync/presentation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -12,7 +13,10 @@ type Server struct {
 	app *fiber.App
 }
 
-func New(stockController *stocks.StockController) *Server {
+func New(
+	stockController *stocks.StockController,
+	syncController *sync.SyncController,
+) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middlewares.ErrorHandler,
 	})
@@ -24,13 +28,7 @@ func New(stockController *stocks.StockController) *Server {
 		TimeZone:   "UTC",
 	}))
 
-	//TODO: swagger
-
-	// routing
-	// app.GET("/health", healthCheckHandler.check)
-
-	stocksGroup := app.Group("/stocks")
-	stockController.Route(stocksGroup)
+	route(app, stockController, syncController)
 
 	return &Server{
 		app: app,

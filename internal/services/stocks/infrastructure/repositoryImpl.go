@@ -57,19 +57,15 @@ func (r *StockRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Stock, error) {
 	return stocks, nil
 }
 
-func (r *StockRepositoryImpl) FindByCusip(db *gorm.DB, cusip string) (*domain.Stock, error, bool) {
+func (r *StockRepositoryImpl) FindByCusips(db *gorm.DB, cusips []string) ([]*domain.Stock, error) {
 	if db == nil {
 		db = r.manager
 	}
 
-	var stock *domain.Stock
-	if err := db.Where("cusip = ?", cusip).First(&stock).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil, false
-		}
-
-		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findByCusip. %s", err.Error()), ""), false
+	var stocks []*domain.Stock
+	if err := db.Where("cusip IN ?", cusips).Find(&stocks).Error; err != nil {
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findByCusips. %s", err.Error()), "")
 	}
 
-	return stock, nil, true
+	return stocks, nil
 }

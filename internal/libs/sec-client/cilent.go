@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	calendarDate "github.com/changchanghwang/wdwb_back/internal/libs/calendar-date"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"golang.org/x/net/html/charset"
 )
@@ -20,7 +21,8 @@ type SecClient struct {
 }
 
 func New() *SecClient {
-	secHttpClient := newSecHttpClient(10, 9)
+	// NOTE: sec 서버의 rate limit은 초당 10개까지 가능하지만 너무 많은 요청을 보내면 limit에 걸리기 때문에 6개로 제한
+	secHttpClient := newSecHttpClient(10, 6)
 
 	return &SecClient{
 		sec: secHttpClient,
@@ -64,7 +66,7 @@ func (s *SecClient) GetFilings(cik string) ([]*FilingDTO, error) {
 		return nil, applicationError.Wrap(err)
 	}
 
-	filingsMap := make(map[string]*FilingDTO)
+	filingsMap := make(map[calendarDate.CalendarDate]*FilingDTO)
 	for i, form := range data.Filings.Recent.Form {
 		if form == "13F-HR" || form == "13F-HR/A" {
 			reportDate := data.Filings.Recent.ReportDate[i]
@@ -145,31 +147,39 @@ func (s *SecClient) GetFilings(cik string) ([]*FilingDTO, error) {
 			splittedNonPrimaryDocLink := strings.Split(nonPrimaryDocLink, "/")
 			filing.InfoTableLink = fmt.Sprintf("%s/%s", baseUrl, splittedNonPrimaryDocLink[len(splittedNonPrimaryDocLink)-1])
 		} else {
-			return nil, fmt.Errorf("조건에 맞는 파일 링크를 찾을 수 없습니다")
+			return nil, applicationError.New(http.StatusBadRequest, fmt.Sprintf("조건에 맞는 파일 링크를 찾을 수 없습니다: %s", baseUrl), "")
 		}
 	}
 
 	return filings, nil
 }
 
-func (s *SecClient) ParseInfoTable(url string) ([]HoldingDto, error) {
+func (s *SecClient) ParseInfoTable(url string) ([]*HoldingDto, error) {
 	resp, err := s.sec.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to get info table for url: %s\n%v", url, err.Error()), "")
 	}
 	defer resp.Body.Close()
 
 	body, e := io.ReadAll(resp.Body)
 	if e != nil {
-		return nil, e
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to read info table for url: %s\n%v", url, e.Error()), "")
 	}
 
 	if strings.Contains(url, ".xml") {
-		return s.parseXml(body, url)
+		holdings, err := s.parseXml(body, url)
+		if err != nil {
+			return nil, applicationError.Wrap(err)
+		}
+		return holdings, nil
 	}
 
 	if strings.Contains(url, ".txt") {
-		return s.parseText(body, url)
+		holdings, err := s.parseText(body, url)
+		if err != nil {
+			return nil, applicationError.Wrap(err)
+		}
+		return holdings, nil
 	}
 
 	return nil, applicationError.New(http.StatusBadRequest, "Invalid URL", "")
@@ -201,7 +211,7 @@ type VotingAuthority struct {
 	None   string `xml:"None,ns1:None"`
 }
 
-func (s *SecClient) parseXml(infoTable []byte, url string) ([]HoldingDto, error) {
+func (s *SecClient) parseXml(infoTable []byte, url string) ([]*HoldingDto, error) {
 	var informationTable InformationTable
 
 	decoder := xml.NewDecoder(bytes.NewReader(infoTable))
@@ -213,7 +223,7 @@ func (s *SecClient) parseXml(infoTable []byte, url string) ([]HoldingDto, error)
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("error with parsing xml url: %s\n%v", url, err.Error()), "")
 	}
 
-	holdings := make([]HoldingDto, 0, len(informationTable.InfoTable))
+	holdings := make([]*HoldingDto, 0, len(informationTable.InfoTable))
 	for _, infoTable := range informationTable.InfoTable {
 		value, err := strconv.Atoi(strings.ReplaceAll(infoTable.Value, ",", ""))
 		if err != nil {
@@ -225,7 +235,7 @@ func (s *SecClient) parseXml(infoTable []byte, url string) ([]HoldingDto, error)
 			return nil, err
 		}
 
-		holdings = append(holdings, HoldingDto{
+		holdings = append(holdings, &HoldingDto{
 			CompanyName:  infoTable.NameOfIssuer,
 			Cusip:        infoTable.Cusip,
 			TitleOfClass: infoTable.TitleOfClass,
@@ -236,11 +246,11 @@ func (s *SecClient) parseXml(infoTable []byte, url string) ([]HoldingDto, error)
 	return holdings, nil
 }
 
-func (s *SecClient) parseText(infoTable []byte, url string) ([]HoldingDto, error) {
+func (s *SecClient) parseText(infoTable []byte, url string) ([]*HoldingDto, error) {
 	textData := string(infoTable)
 	lines := strings.Split(textData, "\n")
 
-	var headerLine, dashedLine string
+	var dashedLine string
 	var dataLines []string
 	inTable := false
 	dashedFound := false
@@ -256,10 +266,6 @@ func (s *SecClient) parseText(infoTable []byte, url string) ([]HoldingDto, error
 			continue
 		}
 
-		if headerLine == "" && strings.Contains(trimmed, "NAME OF ISSUER") {
-			headerLine = trimmed
-			continue
-		}
 		if !dashedFound && strings.Contains(trimmed, "-----") && strings.Count(trimmed, "-") > 10 {
 			dashedLine = trimmed
 			dashedFound = true
@@ -276,16 +282,16 @@ func (s *SecClient) parseText(infoTable []byte, url string) ([]HoldingDto, error
 		}
 	}
 
-	if headerLine == "" || !dashedFound {
-		return nil, fmt.Errorf("error with parsing text url: %s\n%v", url, "")
+	if !dashedFound {
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("error with parsing text url: %s\n%v", url, ""), "")
 	}
 
 	boundaries := computeBoundaries(dashedLine)
 	if len(boundaries) == 0 {
-		return nil, fmt.Errorf("error with parsing text url: %s\n%v", url, "")
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("error with parsing text url: %s\n%v", url, ""), "")
 	}
 
-	var holdings []HoldingDto
+	var holdings []*HoldingDto
 	for _, line := range dataLines {
 		if len(line) < boundaries[len(boundaries)-1].end {
 			line += strings.Repeat(" ", boundaries[len(boundaries)-1].end-len(line))
@@ -316,27 +322,23 @@ func (s *SecClient) parseText(infoTable []byte, url string) ([]HoldingDto, error
 			sharesStr = sharesParts[0]
 		}
 
-		value, err := strconv.Atoi(valueStr)
+		value, err := strconv.Atoi(strings.ReplaceAll(valueStr, ",", ""))
 		if err != nil {
-			return nil, fmt.Errorf("value 파싱 오류: %v", err)
+			continue
 		}
 
-		shares, err := strconv.Atoi(sharesStr)
+		shares, err := strconv.Atoi(strings.ReplaceAll(sharesStr, ",", ""))
 		if err != nil {
-			return nil, fmt.Errorf("shares 파싱 오류: %v", err)
+			continue
 		}
 
-		holdings = append(holdings, HoldingDto{
+		holdings = append(holdings, &HoldingDto{
 			CompanyName:  companyName,
 			TitleOfClass: titleOfClass,
 			Cusip:        cusip,
 			Value:        value,
 			StockShares:  shares,
 		})
-	}
-
-	if len(holdings) == 0 {
-		return nil, fmt.Errorf("파싱된 데이터가 없습니다")
 	}
 
 	return holdings, nil

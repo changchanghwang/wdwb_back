@@ -20,6 +20,8 @@ func (t *secTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.Transport.RoundTrip(req)
 }
 
+// rps: 초당 요청 수
+// burst: 동시 요청 수
 func newSecHttpClient(rps int, burst int) *secHttpClient {
 	return &secHttpClient{
 		RateLimitedClient: rateLimitClient.New(rps, burst, &http.Client{
