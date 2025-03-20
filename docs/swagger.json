@@ -1,0 +1,104 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API Server for wdwb",
+        "title": "wdwb API",
+        "contact": {
+            "name": "API Support",
+            "email": "window95pill@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/investors": {
+            "get": {
+                "description": "Get investors list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "investors"
+                ],
+                "summary": "Get investors list",
+                "responses": {
+                    "200": {
+                        "description": "Successfully get investors list",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "base.BaseResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "response.ListResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.RetrieveResponse"
+                    }
+                }
+            }
+        },
+        "response.RetrieveResponse": {
+            "type": "object",
+            "properties": {
+                "cik": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "holdingValue": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

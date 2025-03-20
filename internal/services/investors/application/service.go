@@ -6,7 +6,6 @@ import (
 	investorInfra "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/response"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
-	"github.com/changchanghwang/wdwb_back/pkg/util"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 )
@@ -26,7 +25,7 @@ func New(
 	}
 }
 
-func (s *InvestorService) List() (*util.PaginatedResponse[*response.ListResponse], error) {
+func (s *InvestorService) List() (*response.ListResponse, error) {
 	var (
 		investors []*domain.Investor
 		count     int
@@ -49,10 +48,13 @@ func (s *InvestorService) List() (*util.PaginatedResponse[*response.ListResponse
 		return nil, applicationError.Wrap(err)
 	}
 
-	res := make([]*response.ListResponse, len(investors))
+	res := &response.ListResponse{
+		Items: make([]*response.RetrieveResponse, len(investors)),
+		Count: count,
+	}
 
 	for i, investor := range investors {
-		res[i] = &response.ListResponse{
+		res.Items[i] = &response.RetrieveResponse{
 			Id:           investor.Id.String(),
 			Name:         investor.Name,
 			CompanyName:  investor.CompanyName,
@@ -61,5 +63,5 @@ func (s *InvestorService) List() (*util.PaginatedResponse[*response.ListResponse
 		}
 	}
 
-	return util.Paginated(res, count), nil
+	return res, nil
 }

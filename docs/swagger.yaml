@@ -1,0 +1,66 @@
+basePath: /
+definitions:
+  base.BaseResponse:
+    properties:
+      data: {}
+    type: object
+  response.ListResponse:
+    properties:
+      count:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/response.RetrieveResponse'
+        type: array
+    type: object
+  response.RetrieveResponse:
+    properties:
+      cik:
+        type: string
+      companyName:
+        type: string
+      holdingValue:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+info:
+  contact:
+    email: window95pill@gmail.com
+    name: API Support
+  description: API Server for wdwb
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: wdwb API
+  version: "1.0"
+paths:
+  /investors:
+    get:
+      consumes:
+      - application/json
+      description: Get investors list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get investors list
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.ListResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      summary: Get investors list
+      tags:
+      - investors
+swagger: "2.0"
