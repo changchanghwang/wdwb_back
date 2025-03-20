@@ -56,11 +56,39 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
-                        "schema": {}
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     },
                     "500": {
                         "description": "Internal server error",
-                        "schema": {}
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -71,6 +99,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {}
+            }
+        },
+        "base.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "error message"
+                }
             }
         },
         "response.ListResponse": {
@@ -91,19 +128,24 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "cik": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1234567890"
                 },
                 "companyName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Company Name"
                 },
                 "holdingValue": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1000000
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         }

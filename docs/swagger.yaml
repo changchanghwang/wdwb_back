@@ -4,6 +4,12 @@ definitions:
     properties:
       data: {}
     type: object
+  base.ErrorResponse:
+    properties:
+      data:
+        example: error message
+        type: string
+    type: object
   response.ListResponse:
     properties:
       count:
@@ -16,14 +22,19 @@ definitions:
   response.RetrieveResponse:
     properties:
       cik:
+        example: "1234567890"
         type: string
       companyName:
+        example: Company Name
         type: string
       holdingValue:
+        example: 1000000
         type: integer
       id:
+        example: 123e4567-e89b-12d3-a456-426614174000
         type: string
       name:
+        example: John Doe
         type: string
     type: object
 info:
@@ -56,10 +67,22 @@ paths:
               type: object
         "400":
           description: Bad request
-          schema: {}
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
         "500":
           description: Internal server error
-          schema: {}
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
       summary: Get investors list
       tags:
       - investors

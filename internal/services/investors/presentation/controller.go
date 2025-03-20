@@ -28,8 +28,8 @@ func (c *InvestorController) Route(r fiber.Router) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} base.BaseResponse{data=response.ListResponse} "Successfully get investors list"
-// @Failure 400 {object} error "Bad request"
-// @Failure 500 {object} error "Internal server error"
+// @Failure 400 {object} base.ErrorResponse{data=string} "Bad request"
+// @Failure 500 {object} base.ErrorResponse{data=string} "Internal server error"
 // @Router /investors [get]
 func (c *InvestorController) List(ctx *fiber.Ctx) error {
 	res, err := c.investorService.List()
