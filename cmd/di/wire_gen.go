@@ -12,7 +12,9 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/server"
 	infrastructure3 "github.com/changchanghwang/wdwb_back/internal/services/filings/infrastructure"
 	infrastructure4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
+	application3 "github.com/changchanghwang/wdwb_back/internal/services/investors/application"
 	infrastructure2 "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
+	presentation3 "github.com/changchanghwang/wdwb_back/internal/services/investors/presentation"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
@@ -33,6 +35,9 @@ func InitializeServer() (*server.Server, error) {
 	holdingRepository := infrastructure4.New(gormDB)
 	syncService := application2.New(secClientSecClient, investorRepository, filingRepository, stockRepository, holdingRepository, gormDB)
 	syncController := presentation2.New(syncService)
-	serverServer := server.New(stockController, syncController)
+	investorService := application3.New(investorRepository, gormDB)
+	investorController := presentation3.New(investorService)
+	route := server.NewRoute(stockController, syncController, investorController)
+	serverServer := server.New(route)
 	return serverServer, nil
 }

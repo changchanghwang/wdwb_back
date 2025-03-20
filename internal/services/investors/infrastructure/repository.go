@@ -7,4 +7,5 @@ import (
 
 type InvestorRepository interface {
 	FindAll(db *gorm.DB) ([]*domain.Investor, error)
+	Count(db *gorm.DB) (int, error)
 }

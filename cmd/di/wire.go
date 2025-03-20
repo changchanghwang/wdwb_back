@@ -18,7 +18,7 @@ import (
 func InitializeServer() (*server.Server, error) {
 	wire.Build(
 		db.Init,
-		server.New,
+		server.ServerSet,
 		secClient.New,
 		stocks.StockSet,
 		filings.FilingSet,

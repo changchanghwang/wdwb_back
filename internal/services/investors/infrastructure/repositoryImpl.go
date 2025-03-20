@@ -29,3 +29,16 @@ func (r *InvestorRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Investor, error
 
 	return investors, nil
 }
+
+func (r *InvestorRepositoryImpl) Count(db *gorm.DB) (int, error) {
+	if db == nil {
+		db = r.manager
+	}
+
+	var count int64
+	if err := db.Model(&domain.Investor{}).Count(&count).Error; err != nil {
+		return 0, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to count. %s", err.Error()), "")
+	}
+
+	return int(count), nil
+}

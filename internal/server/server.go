@@ -2,8 +2,6 @@ package server
 
 import (
 	"github.com/changchanghwang/wdwb_back/internal/middlewares"
-	stocks "github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
-	sync "github.com/changchanghwang/wdwb_back/internal/services/sync/presentation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -14,8 +12,7 @@ type Server struct {
 }
 
 func New(
-	stockController *stocks.StockController,
-	syncController *sync.SyncController,
+	route *Route,
 ) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middlewares.ErrorHandler,
@@ -28,7 +25,7 @@ func New(
 		TimeZone:   "UTC",
 	}))
 
-	route(app, stockController, syncController)
+	route.Route(app)
 
 	return &Server{
 		app: app,
