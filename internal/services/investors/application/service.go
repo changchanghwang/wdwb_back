@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
+	"github.com/changchanghwang/wdwb_back/internal/services/investors/command"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/domain"
 	investorInfra "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/response"
@@ -61,6 +62,23 @@ func (s *InvestorService) List() (*response.ListResponse, error) {
 			Cik:          investor.Cik,
 			HoldingValue: investor.HoldingValue,
 		}
+	}
+
+	return res, nil
+}
+
+func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.RetrieveResponse, error) {
+	investor, err := s.investorRepository.FindOneOrFail(nil, command.Id)
+	if err != nil {
+		return nil, applicationError.Wrap(err)
+	}
+
+	res := &response.RetrieveResponse{
+		Id:           investor.Id.String(),
+		Name:         investor.Name,
+		CompanyName:  investor.CompanyName,
+		Cik:          investor.Cik,
+		HoldingValue: investor.HoldingValue,
 	}
 
 	return res, nil

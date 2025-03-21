@@ -4,9 +4,12 @@ import (
 	"net/http"
 
 	"github.com/changchanghwang/wdwb_back/internal/libs/base"
+	"github.com/changchanghwang/wdwb_back/internal/libs/validate"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/application"
+	"github.com/changchanghwang/wdwb_back/internal/services/investors/command"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type InvestorController struct {
@@ -19,6 +22,7 @@ func New(investorService *application.InvestorService) *InvestorController {
 
 func (c *InvestorController) Route(r fiber.Router) {
 	r.Get("/", c.List)
+	r.Get("/:id", c.Retrieve)
 }
 
 // List godoc
@@ -33,6 +37,35 @@ func (c *InvestorController) Route(r fiber.Router) {
 // @Router /investors [get]
 func (c *InvestorController) List(ctx *fiber.Ctx) error {
 	res, err := c.investorService.List()
+	if err != nil {
+		return applicationError.Wrap(err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(base.NewResponse(res))
+}
+
+// Retrieve godoc
+// @Summary Retrieve investor
+// @Description Retrieve investor
+// @Tags investors
+// @Accept json
+// @Produce json
+// @Param id path string true "Investor ID"
+// @Success 200 {object} base.BaseResponse{data=response.RetrieveResponse} "Successfully retrieve investor"
+// @Failure 400 {object} base.ErrorResponse{data=string} "Bad request"
+// @Failure 404 {object} base.ErrorResponse{data=string} "Not found"
+// @Failure 500 {object} base.ErrorResponse{data=string} "Internal server error"
+// @Router /investors/{id} [get]
+func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
+	retrieveCommand := &command.RetrieveCommand{
+		Id: uuid.MustParse(ctx.Params("id")),
+	}
+
+	if err := validate.ValidateStruct(retrieveCommand); err != nil {
+		return err
+	}
+
+	res, err := c.investorService.Retrieve(retrieveCommand)
 	if err != nil {
 		return applicationError.Wrap(err)
 	}

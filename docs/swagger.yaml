@@ -86,4 +86,57 @@ paths:
       summary: Get investors list
       tags:
       - investors
+  /investors/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve investor
+      parameters:
+      - description: Investor ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieve investor
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.RetrieveResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "404":
+          description: Not found
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Retrieve investor
+      tags:
+      - investors
 swagger: "2.0"

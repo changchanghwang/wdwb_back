@@ -6,6 +6,7 @@ import (
 
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/domain"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -41,4 +42,17 @@ func (r *InvestorRepositoryImpl) Count(db *gorm.DB) (int, error) {
 	}
 
 	return int(count), nil
+}
+
+func (r *InvestorRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Investor, error) {
+	if db == nil {
+		db = r.manager
+	}
+
+	var investor domain.Investor
+	if err := db.Where("id = ?", id).First(&investor).Error; err != nil {
+		return nil, applicationError.New(http.StatusNotFound, fmt.Sprintf("Failed to findOneOrFail. %s", err.Error()), "")
+	}
+
+	return &investor, nil
 }
