@@ -1,12 +1,8 @@
 basePath: /
 definitions:
-  base.BaseResponse:
-    properties:
-      data: {}
-    type: object
   base.ErrorResponse:
     properties:
-      data:
+      errorMessage:
         example: error message
         type: string
     type: object
@@ -22,18 +18,23 @@ definitions:
   response.RetrieveResponse:
     properties:
       cik:
+        description: investor company index key
         example: "1234567890"
         type: string
       companyName:
+        description: investor company name
         example: Company Name
         type: string
       holdingValue:
+        description: total value of holdings
         example: 1000000
         type: integer
       id:
+        description: investor id
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string
       name:
+        description: investor name
         example: John Doe
         type: string
     type: object
@@ -59,19 +60,14 @@ paths:
         "200":
           description: Successfully get investors list
           schema:
-            allOf:
-            - $ref: '#/definitions/base.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/response.ListResponse'
-              type: object
+            $ref: '#/definitions/response.ListResponse'
         "400":
           description: Bad request
           schema:
             allOf:
             - $ref: '#/definitions/base.ErrorResponse'
             - properties:
-                data:
+                errorMessage:
                   type: string
               type: object
         "500":
@@ -80,7 +76,7 @@ paths:
             allOf:
             - $ref: '#/definitions/base.ErrorResponse'
             - properties:
-                data:
+                errorMessage:
                   type: string
               type: object
       summary: Get investors list
@@ -103,19 +99,14 @@ paths:
         "200":
           description: Successfully retrieve investor
           schema:
-            allOf:
-            - $ref: '#/definitions/base.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/response.RetrieveResponse'
-              type: object
+            $ref: '#/definitions/response.RetrieveResponse'
         "400":
           description: Bad request
           schema:
             allOf:
             - $ref: '#/definitions/base.ErrorResponse'
             - properties:
-                data:
+                errorMessage:
                   type: string
               type: object
         "404":
@@ -124,7 +115,7 @@ paths:
             allOf:
             - $ref: '#/definitions/base.ErrorResponse'
             - properties:
-                data:
+                errorMessage:
                   type: string
               type: object
         "500":
@@ -133,7 +124,7 @@ paths:
             allOf:
             - $ref: '#/definitions/base.ErrorResponse'
             - properties:
-                data:
+                errorMessage:
                   type: string
               type: object
       summary: Retrieve investor

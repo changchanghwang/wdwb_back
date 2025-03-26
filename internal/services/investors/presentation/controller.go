@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/changchanghwang/wdwb_back/internal/libs/base"
 	"github.com/changchanghwang/wdwb_back/internal/libs/validate"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/command"
@@ -32,9 +31,9 @@ func (c *InvestorController) Route(r fiber.Router) {
 // @Tags investors
 // @Accept json
 // @Produce json
-// @Success 200 {object} base.BaseResponse{data=response.ListResponse} "Successfully get investors list"
-// @Failure 400 {object} base.ErrorResponse{data=string} "Bad request"
-// @Failure 500 {object} base.ErrorResponse{data=string} "Internal server error"
+// @Success 200 {object} response.ListResponse "Successfully get investors list"
+// @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
+// @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /investors [get]
 func (c *InvestorController) List(ctx *fiber.Ctx) error {
 	res, err := c.investorService.List()
@@ -42,7 +41,7 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 		return applicationError.Wrap(err)
 	}
 
-	return ctx.Status(http.StatusOK).JSON(base.NewResponse(res))
+	return ctx.Status(http.StatusOK).JSON(res)
 }
 
 // Retrieve godoc
@@ -52,10 +51,10 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Investor ID"
-// @Success 200 {object} base.BaseResponse{data=response.RetrieveResponse} "Successfully retrieve investor"
-// @Failure 400 {object} base.ErrorResponse{data=string} "Bad request"
-// @Failure 404 {object} base.ErrorResponse{data=string} "Not found"
-// @Failure 500 {object} base.ErrorResponse{data=string} "Internal server error"
+// @Success 200 {object} response.RetrieveResponse "Successfully retrieve investor"
+// @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
+// @Failure 404 {object} base.ErrorResponse{errorMessage=string} "Not found"
+// @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /investors/{id} [get]
 func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
@@ -76,5 +75,5 @@ func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
 		return applicationError.Wrap(err)
 	}
 
-	return ctx.Status(http.StatusOK).JSON(base.NewResponse(res))
+	return ctx.Status(http.StatusOK).JSON(res)
 }

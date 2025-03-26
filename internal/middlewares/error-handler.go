@@ -10,7 +10,7 @@ import (
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	if e, ok := err.(*fiber.Error); ok {
-		return ctx.Status(e.Code).JSON(base.ErrorResponse{Data: e.Message})
+		return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: e.Message})
 	}
 
 	e := applicationError.UnWrap(err)
@@ -19,5 +19,5 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	//TODO: log error with something (e.g. Sentry, ELK, File, etc.)
 	fmt.Println(e.Stack)
 
-	return ctx.Status(e.Code).JSON(base.ErrorResponse{Data: e.ClientMessage})
+	return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: e.ClientMessage})
 }

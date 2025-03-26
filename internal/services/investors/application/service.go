@@ -56,7 +56,7 @@ func (s *InvestorService) List() (*response.ListResponse, error) {
 
 	for i, investor := range investors {
 		res.Items[i] = &response.RetrieveResponse{
-			Id:           investor.Id.String(),
+			Id:           investor.Id,
 			Name:         investor.Name,
 			CompanyName:  investor.CompanyName,
 			Cik:          investor.Cik,
@@ -74,7 +74,7 @@ func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.
 	}
 
 	res := &response.RetrieveResponse{
-		Id:           investor.Id.String(),
+		Id:           investor.Id,
 		Name:         investor.Name,
 		CompanyName:  investor.CompanyName,
 		Cik:          investor.Cik,

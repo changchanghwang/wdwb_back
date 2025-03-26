@@ -39,19 +39,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully get investors list",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/base.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/response.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/response.ListResponse"
                         }
                     },
                     "400": {
@@ -64,7 +52,7 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
+                                        "errorMessage": {
                                             "type": "string"
                                         }
                                     }
@@ -82,7 +70,7 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
+                                        "errorMessage": {
                                             "type": "string"
                                         }
                                     }
@@ -119,19 +107,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieve investor",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/base.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/response.RetrieveResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/response.RetrieveResponse"
                         }
                     },
                     "400": {
@@ -144,7 +120,7 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
+                                        "errorMessage": {
                                             "type": "string"
                                         }
                                     }
@@ -162,7 +138,7 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
+                                        "errorMessage": {
                                             "type": "string"
                                         }
                                     }
@@ -180,7 +156,7 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
+                                        "errorMessage": {
                                             "type": "string"
                                         }
                                     }
@@ -193,16 +169,10 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "base.BaseResponse": {
-            "type": "object",
-            "properties": {
-                "data": {}
-            }
-        },
         "base.ErrorResponse": {
             "type": "object",
             "properties": {
-                "data": {
+                "errorMessage": {
                     "type": "string",
                     "example": "error message"
                 }
@@ -226,22 +196,27 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "cik": {
+                    "description": "investor company index key",
                     "type": "string",
                     "example": "1234567890"
                 },
                 "companyName": {
+                    "description": "investor company name",
                     "type": "string",
                     "example": "Company Name"
                 },
                 "holdingValue": {
+                    "description": "total value of holdings",
                     "type": "integer",
                     "example": 1000000
                 },
                 "id": {
+                    "description": "investor id",
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
                 "name": {
+                    "description": "investor name",
                     "type": "string",
                     "example": "John Doe"
                 }
