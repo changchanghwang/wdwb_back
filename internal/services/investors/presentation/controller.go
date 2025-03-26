@@ -1,6 +1,7 @@
 package presentation
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/changchanghwang/wdwb_back/internal/libs/base"
@@ -57,8 +58,13 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 // @Failure 500 {object} base.ErrorResponse{data=string} "Internal server error"
 // @Router /investors/{id} [get]
 func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
+	id, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return applicationError.New(http.StatusBadRequest, fmt.Sprintf("uuid parse error: %s", err.Error()), "Invalid investor Id")
+	}
+
 	retrieveCommand := &command.RetrieveCommand{
-		Id: uuid.MustParse(ctx.Params("id")),
+		Id: id,
 	}
 
 	if err := validate.ValidateStruct(retrieveCommand); err != nil {
