@@ -3,6 +3,7 @@ package server
 import (
 	_ "github.com/changchanghwang/wdwb_back/docs"
 	"github.com/changchanghwang/wdwb_back/internal/config"
+	holdings "github.com/changchanghwang/wdwb_back/internal/services/holdings/presentation"
 	investors "github.com/changchanghwang/wdwb_back/internal/services/investors/presentation"
 	stocks "github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
 	sync "github.com/changchanghwang/wdwb_back/internal/services/sync/presentation"
@@ -14,17 +15,20 @@ type Route struct {
 	stocks   *stocks.StockController
 	sync     *sync.SyncController
 	investor *investors.InvestorController
+	holding  *holdings.HoldingController
 }
 
 func NewRoute(
 	stocks *stocks.StockController,
 	sync *sync.SyncController,
 	investor *investors.InvestorController,
+	holding *holdings.HoldingController,
 ) *Route {
 	return &Route{
 		stocks:   stocks,
 		sync:     sync,
 		investor: investor,
+		holding:  holding,
 	}
 }
 
@@ -55,4 +59,8 @@ func (r *Route) Route(app *fiber.App) {
 	// investors
 	investorsGroup := app.Group("/investors")
 	r.investor.Route(investorsGroup)
+
+	// holdings
+	holdingsGroup := app.Group("/holdings")
+	r.holding.Route(holdingsGroup)
 }
