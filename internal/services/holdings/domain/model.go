@@ -11,7 +11,7 @@ import (
 
 type Holding struct {
 	ddd.Aggregate
-	Id         uuid.UUID `json:"id" gorm:"column:id; type:varchar(32); primaryKey"`
+	Id         uuid.UUID `json:"id" gorm:"column:id; type:varchar(36); primaryKey"`
 	Name       string    `json:"name" gorm:"type:varchar(255); not null;"`
 	Cik        string    `json:"cik" gorm:"type:varchar(20); not null;"`
 	Cusip      string    `json:"cusip" gorm:"type:varchar(20);  not null;"`

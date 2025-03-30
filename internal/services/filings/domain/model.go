@@ -9,7 +9,7 @@ import (
 type Filing struct {
 	ddd.Aggregate
 	Id              int                       `json:"id" gorm:"column:id; primaryKey; autoIncrement:true"`
-	InvestorId      string                    `json:"investorId" gorm:"type:varchar(20); column:investorId; not null;"`
+	InvestorId      string                    `json:"investorId" gorm:"type:varchar(36); column:investorId; not null;"`
 	Type            string                    `json:"type" gorm:"type:varchar(20); not null;"`
 	AccessionNumber string                    `json:"accessionNumber" gorm:"type:varchar(50); column:accessionNumber; not null;"`
 	FilledOn        calendarDate.CalendarDate `json:"filledOn" gorm:"type:date; column:filledOn; not null;"`

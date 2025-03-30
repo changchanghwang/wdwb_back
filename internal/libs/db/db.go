@@ -10,10 +10,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-
-	filingDomain "github.com/changchanghwang/wdwb_back/internal/services/filings/domain"
-	holdingDomain "github.com/changchanghwang/wdwb_back/internal/services/holdings/domain"
-	investorDomain "github.com/changchanghwang/wdwb_back/internal/services/investors/domain"
 )
 
 func Init() *gorm.DB {
@@ -35,8 +31,6 @@ func Init() *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	db.AutoMigrate(&holdingDomain.Holding{}, &investorDomain.Investor{}, &filingDomain.Filing{})
 
 	return db
 }
