@@ -58,8 +58,20 @@ func (s *HoldingService) List(command *commands.ListCommand) (*response.ListResp
 	}
 
 	res := &response.ListResponse{
-		Items: holdings,
+		Items: make([]*response.RetrieveResponse, len(holdings)),
 		Count: count,
+	}
+
+	for i, holding := range holdings {
+		res.Items[i] = &response.RetrieveResponse{
+			Id:         holding.Id,
+			InvestorId: holding.InvestorId,
+			Name:       holding.Name,
+			Year:       holding.Year,
+			Quarter:    holding.Quarter,
+			Value:      holding.Value,
+			Shares:     holding.Shares,
+		}
 	}
 
 	return res, nil
