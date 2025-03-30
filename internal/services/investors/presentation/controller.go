@@ -59,7 +59,7 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
-		return applicationError.New(http.StatusBadRequest, fmt.Sprintf("uuid parse error: %s", err.Error()), "Invalid investor Id")
+		return applicationError.New(http.StatusBadRequest, fmt.Sprintf("uuid parse error: %s", err.Error()), "ERR000")
 	}
 
 	retrieveCommand := &command.RetrieveCommand{

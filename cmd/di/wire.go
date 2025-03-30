@@ -6,6 +6,7 @@ package di
 import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/db"
 	secClient "github.com/changchanghwang/wdwb_back/internal/libs/sec-client"
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	"github.com/changchanghwang/wdwb_back/internal/server"
 	"github.com/changchanghwang/wdwb_back/internal/services/filings"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings"
@@ -25,6 +26,7 @@ func InitializeServer() (*server.Server, error) {
 		investors.InvestorSet,
 		holdings.HoldingSet,
 		sync.SyncSet,
+		translate.TranslateSet,
 	)
 	return &server.Server{}, nil
 }

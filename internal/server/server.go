@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	"github.com/changchanghwang/wdwb_back/internal/middlewares"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -13,9 +14,10 @@ type Server struct {
 
 func New(
 	route *Route,
+	translator *translate.Translator,
 ) *Server {
 	app := fiber.New(fiber.Config{
-		ErrorHandler: middlewares.ErrorHandler,
+		ErrorHandler: middlewares.NewErrorHandler(translator).Middleware,
 	})
 
 	// request logger
@@ -24,6 +26,8 @@ func New(
 		TimeFormat: "2006-01-02 15:04:05",
 		TimeZone:   "UTC",
 	}))
+
+	app.Use(middlewares.LanguageMiddleware())
 
 	route.Route(app)
 

@@ -10,23 +10,23 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Run("Should return a new httpError", func(t *testing.T) {
-		err := New(500, "Internal Server Error", "Something went wrong.")
+		err := New(500, "Internal Server Error", "ERRC500")
 
 		assert.NotNil(t, err)
-		assert.Equal(t, err.Code, 500)
+		assert.Equal(t, err.StatusCode, 500)
 		assert.Equal(t, err.Message, "Internal Server Error")
-		assert.Equal(t, err.ClientMessage, "Something went wrong.")
+		assert.Equal(t, err.ErrorCode, "ERRC500")
 	})
 
 	t.Run("Empty clientMsg should fall back to message", func(t *testing.T) {
 		err := New(500, "Internal Server Error", "")
 
 		assert.NotNil(t, err)
-		assert.Equal(t, err.ClientMessage, "Internal Server Error")
+		assert.Equal(t, err.ErrorCode, "ERRC500")
 	})
 
 	t.Run("Should return a new httpError with stack trace", func(t *testing.T) {
-		err := New(500, "Internal Server Error", "Something went wrong.")
+		err := New(500, "Internal Server Error", "ERRC500.")
 
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Stack, "Error: Internal Server Error")
@@ -34,7 +34,7 @@ func TestNew(t *testing.T) {
 }
 
 func httpErrorFuncOne() error {
-	return New(500, "Internal Server Error", "Something went wrong.")
+	return New(500, "Internal Server Error", "ERRC500.")
 }
 
 func errorFuncOne() error {

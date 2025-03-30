@@ -32,10 +32,10 @@ func (c *SyncController) Sync(ctx *fiber.Ctx) error {
 		return applicationError.New(http.StatusForbidden, "Invalid Secret.", "Only Admin Can run Sync.")
 	}
 
-	err := c.syncService.Sync()
+	message, err := c.syncService.Sync()
 	if err != nil {
 		return applicationError.Wrap(err)
 	}
 
-	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Synced"})
+	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": message})
 }

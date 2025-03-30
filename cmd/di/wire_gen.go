@@ -9,6 +9,7 @@ package di
 import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/db"
 	"github.com/changchanghwang/wdwb_back/internal/libs/sec-client"
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	"github.com/changchanghwang/wdwb_back/internal/server"
 	infrastructure3 "github.com/changchanghwang/wdwb_back/internal/services/filings/infrastructure"
 	application4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/application"
@@ -42,6 +43,7 @@ func InitializeServer() (*server.Server, error) {
 	holdingService := application4.New(holdingRepository, gormDB, secClientSecClient)
 	holdingController := presentation4.New(holdingService)
 	route := server.NewRoute(stockController, syncController, investorController, holdingController)
-	serverServer := server.New(route)
+	translator := translate.New()
+	serverServer := server.New(route, translator)
 	return serverServer, nil
 }

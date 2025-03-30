@@ -7,22 +7,22 @@ import (
 )
 
 type httpError struct {
-	Message       string
-	Code          int
-	ClientMessage string
-	Stack         string
+	Message    string
+	StatusCode int
+	ErrorCode  string
+	Stack      string
 }
 
-func New(status int, msg, clientMsg string) *httpError {
-	clientMessage := clientMsg
-	if clientMessage == "" {
-		clientMessage = getDefaultErrorMessage(status, msg)
+func New(status int, msg, errorCode string) *httpError {
+	if errorCode == "" {
+		errorCode = getDefaultErrorCode(status)
 	}
+
 	err := httpError{
-		Message:       msg,
-		Code:          status,
-		Stack:         fmt.Sprintf("Error: %s", msg),
-		ClientMessage: clientMessage,
+		Message:    msg,
+		StatusCode: status,
+		Stack:      fmt.Sprintf("Error: %s", msg),
+		ErrorCode:  errorCode,
 	}
 	return err.stackTrace()
 }
@@ -59,9 +59,10 @@ func Wrap(err error) error {
 	// NOTE: Set status with 500 when error is not application error
 	msg := err.Error()
 	httpErr := httpError{
-		Message: msg,
-		Code:    http.StatusInternalServerError,
-		Stack:   fmt.Sprintf("Error: %s", msg),
+		Message:    msg,
+		StatusCode: http.StatusInternalServerError,
+		Stack:      fmt.Sprintf("Error: %s", msg),
+		ErrorCode:  "ERRC500",
 	}
 
 	return httpErr.stackTrace()
@@ -74,9 +75,10 @@ func UnWrap(err error) *httpError {
 	// NOTE: Set status with 500 when error is not application error
 	msg := err.Error()
 	httpErr := httpError{
-		Message: msg,
-		Code:    http.StatusInternalServerError,
-		Stack:   fmt.Sprintf("Error: %s", msg),
+		Message:    msg,
+		StatusCode: http.StatusInternalServerError,
+		Stack:      fmt.Sprintf("Error: %s", msg),
+		ErrorCode:  "ERRC500",
 	}
 
 	return httpErr.stackTrace()

@@ -4,13 +4,26 @@ import (
 	"fmt"
 
 	"github.com/changchanghwang/wdwb_back/internal/libs/base"
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/gofiber/fiber/v2"
 )
 
-func ErrorHandler(ctx *fiber.Ctx, err error) error {
+type ErrorHandler struct {
+	translator *translate.Translator
+}
+
+func NewErrorHandler(translator *translate.Translator) *ErrorHandler {
+	return &ErrorHandler{
+		translator: translator,
+	}
+}
+
+func (h *ErrorHandler) Middleware(ctx *fiber.Ctx, err error) error {
+	locale := ctx.Locals("language").(string)
 	if e, ok := err.(*fiber.Error); ok {
-		return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: e.Message})
+		translatedMessage := h.translator.Translate("error-message", locale, "ERRC500")
+		return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: translatedMessage})
 	}
 
 	e := applicationError.UnWrap(err)
@@ -19,5 +32,6 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	//TODO: log error with something (e.g. Sentry, ELK, File, etc.)
 	fmt.Println(e.Stack)
 
-	return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: e.ClientMessage})
+	translatedMessage := h.translator.Translate("error-message", locale, e.ErrorCode)
+	return ctx.Status(e.StatusCode).JSON(base.ErrorResponse{ErrorMessage: translatedMessage})
 }

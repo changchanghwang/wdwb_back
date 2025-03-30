@@ -46,8 +46,10 @@ func New(
 }
 
 // TODO: event sourcing 기반으로 변경하는게 좋지 않을까?
-func (s *SyncService) Sync() error {
-	return s.Manager.Transaction(func(tx *gorm.DB) error {
+func (s *SyncService) Sync() (string, error) {
+	message := ""
+
+	err := s.Manager.Transaction(func(tx *gorm.DB) error {
 
 		// investor 조회
 		investors, err := s.investorRepository.FindAll(tx)
@@ -96,7 +98,7 @@ func (s *SyncService) Sync() error {
 			for _, newSecFiling := range newSecFilings {
 				holdings, err := s.secClient.ParseInfoTable(newSecFiling.InfoTableLink)
 				if len(holdings) == 0 {
-					fmt.Printf("no parsed holdings for ulr: %s\n", newSecFiling.InfoTableLink)
+					message += fmt.Sprintf("no parsed holdings for url: %s\n", newSecFiling.InfoTableLink)
 				}
 				if err != nil {
 					return applicationError.Wrap(err)
@@ -181,4 +183,10 @@ func (s *SyncService) Sync() error {
 
 		return nil
 	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return message, nil
 }

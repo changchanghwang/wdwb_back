@@ -3,36 +3,38 @@ package applicationError
 import "net/http"
 
 var defaultMessageMap = map[int]string{
-	http.StatusBadRequest:                   "Bad Request",
-	http.StatusUnauthorized:                 "Unauthorized",
-	http.StatusPaymentRequired:              "Payment Required",
-	http.StatusForbidden:                    "Forbidden",
-	http.StatusNotFound:                     "Not Found",
-	http.StatusMethodNotAllowed:             "Method Not Allowed",
-	http.StatusNotAcceptable:                "Not Acceptable",
-	http.StatusProxyAuthRequired:            "Proxy Authentication Required",
-	http.StatusRequestTimeout:               "Request Timeout",
-	http.StatusConflict:                     "Conflict",
-	http.StatusGone:                         "Gone",
-	http.StatusLengthRequired:               "Length Required",
-	http.StatusPreconditionFailed:           "Precondition Failed",
-	http.StatusRequestEntityTooLarge:        "Request Entity Too Large",
-	http.StatusRequestURITooLong:            "Request-URI Too Long",
-	http.StatusUnsupportedMediaType:         "Unsupported Media Type",
-	http.StatusRequestedRangeNotSatisfiable: "Requested Range Not Satisfiable",
-	http.StatusExpectationFailed:            "Expectation Failed",
-	http.StatusInternalServerError:          "Internal Server Error",
-	http.StatusNotImplemented:               "Not Implemented",
-	http.StatusBadGateway:                   "Bad Gateway",
-	http.StatusServiceUnavailable:           "Service Unavailable",
-	http.StatusGatewayTimeout:               "Gateway Timeout",
-	http.StatusHTTPVersionNotSupported:      "HTTP Version Not Supported",
+	// 400
+	http.StatusBadRequest:                   "ERRC400",
+	http.StatusUnauthorized:                 "ERRC401",
+	http.StatusPaymentRequired:              "ERRC402",
+	http.StatusForbidden:                    "ERRC403",
+	http.StatusNotFound:                     "ERRC404",
+	http.StatusMethodNotAllowed:             "ERRC405",
+	http.StatusNotAcceptable:                "ERRC406",
+	http.StatusProxyAuthRequired:            "ERRC407",
+	http.StatusRequestTimeout:               "ERRC408",
+	http.StatusConflict:                     "ERRC409",
+	http.StatusGone:                         "ERRC410",
+	http.StatusLengthRequired:               "ERRC411",
+	http.StatusPreconditionFailed:           "ERRC412",
+	http.StatusRequestEntityTooLarge:        "ERRC413",
+	http.StatusRequestURITooLong:            "ERRC414",
+	http.StatusUnsupportedMediaType:         "ERRC415",
+	http.StatusRequestedRangeNotSatisfiable: "ERRC416",
+	http.StatusExpectationFailed:            "ERRC417",
+	// 500
+	http.StatusInternalServerError:     "ERRC500",
+	http.StatusNotImplemented:          "ERRC501",
+	http.StatusBadGateway:              "ERRC502",
+	http.StatusServiceUnavailable:      "ERRC503",
+	http.StatusGatewayTimeout:          "ERRC504",
+	http.StatusHTTPVersionNotSupported: "ERRC505",
 }
 
-func getDefaultErrorMessage(status int, msg string) string {
-	if defaultMessage, ok := defaultMessageMap[status]; ok {
-		return defaultMessage
+func getDefaultErrorCode(status int) string {
+	if errorCode, ok := defaultMessageMap[status]; ok {
+		return errorCode
 	}
 
-	return msg
+	return "ERRC500"
 }
