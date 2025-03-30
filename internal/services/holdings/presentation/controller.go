@@ -36,7 +36,7 @@ func (c *HoldingController) Route(r fiber.Router) {
 // @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /holdings [get]
 func (c *HoldingController) List(ctx *fiber.Ctx) error {
-	locale := ctx.Locals("locale").(string)
+	language := ctx.Locals("language").(string)
 	command := &commands.ListCommand{}
 	if err := ctx.QueryParser(command); err != nil {
 		return applicationError.Wrap(err)
@@ -46,7 +46,7 @@ func (c *HoldingController) List(ctx *fiber.Ctx) error {
 		return applicationError.Wrap(err)
 	}
 
-	res, err := c.holdingService.List(locale, command)
+	res, err := c.holdingService.List(language, command)
 	if err != nil {
 		return applicationError.Wrap(err)
 	}
