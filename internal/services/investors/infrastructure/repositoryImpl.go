@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/domain"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/google/uuid"
@@ -11,16 +12,16 @@ import (
 )
 
 type InvestorRepositoryImpl struct {
-	manager *gorm.DB
+	ddd.Repository[domain.Investor]
 }
 
 func New(manager *gorm.DB) InvestorRepository {
-	return &InvestorRepositoryImpl{manager: manager}
+	return &InvestorRepositoryImpl{ddd.Repository[domain.Investor]{Manager: manager}}
 }
 
 func (r *InvestorRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Investor, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var investors []*domain.Investor
@@ -33,7 +34,7 @@ func (r *InvestorRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Investor, error
 
 func (r *InvestorRepositoryImpl) Count(db *gorm.DB) (int, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var count int64
@@ -46,7 +47,7 @@ func (r *InvestorRepositoryImpl) Count(db *gorm.DB) (int, error) {
 
 func (r *InvestorRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Investor, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var investor domain.Investor

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/domain"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/google/uuid"
@@ -11,16 +12,16 @@ import (
 )
 
 type StockRepositoryImpl struct {
-	manager *gorm.DB
+	ddd.Repository[domain.Stock]
 }
 
 func New(manager *gorm.DB) StockRepository {
-	return &StockRepositoryImpl{manager: manager}
+	return &StockRepositoryImpl{ddd.Repository[domain.Stock]{Manager: manager}}
 }
 
 func (r *StockRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Stock, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var stock *domain.Stock
@@ -36,7 +37,7 @@ func (r *StockRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.
 
 func (r *StockRepositoryImpl) Save(db *gorm.DB, stocks []*domain.Stock) error {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	if err := db.Save(stocks).Error; err != nil {
@@ -47,7 +48,7 @@ func (r *StockRepositoryImpl) Save(db *gorm.DB, stocks []*domain.Stock) error {
 
 func (r *StockRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Stock, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var stocks []*domain.Stock
@@ -59,7 +60,7 @@ func (r *StockRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Stock, error) {
 
 func (r *StockRepositoryImpl) FindByCusips(db *gorm.DB, cusips []string) ([]*domain.Stock, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	var stocks []*domain.Stock

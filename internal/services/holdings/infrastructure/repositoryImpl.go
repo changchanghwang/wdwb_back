@@ -5,34 +5,23 @@ import (
 	"net/http"
 
 	"github.com/changchanghwang/wdwb_back/internal/libs/db"
+	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/domain"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"gorm.io/gorm"
 )
 
 type HoldingRepositoryImpl struct {
-	manager *gorm.DB
+	ddd.Repository[domain.Holding]
 }
 
 func New(manager *gorm.DB) HoldingRepository {
-	return &HoldingRepositoryImpl{manager: manager}
-}
-
-func (r *HoldingRepositoryImpl) Save(db *gorm.DB, holdings []*domain.Holding) error {
-	if db == nil {
-		db = r.manager
-	}
-
-	if err := db.Save(holdings).Error; err != nil {
-		return applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to save. %s", err.Error()), "")
-	}
-
-	return nil
+	return &HoldingRepositoryImpl{ddd.Repository[domain.Holding]{Manager: manager}}
 }
 
 func (r *HoldingRepositoryImpl) Find(db *gorm.DB, conditions *HoldingQueryConditions, options *db.FindOptions, orderOptions *db.OrderOptions) ([]*domain.Holding, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	db = db.Scopes(applyConditions(conditions), applyOptions(options, orderOptions))
@@ -47,7 +36,7 @@ func (r *HoldingRepositoryImpl) Find(db *gorm.DB, conditions *HoldingQueryCondit
 
 func (r *HoldingRepositoryImpl) Count(db *gorm.DB, conditions *HoldingQueryConditions) (int, error) {
 	if db == nil {
-		db = r.manager
+		db = r.Manager
 	}
 
 	db = db.Scopes(applyConditions(conditions))
