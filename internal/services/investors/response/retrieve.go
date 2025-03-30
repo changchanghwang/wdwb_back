@@ -2,7 +2,7 @@ package response
 
 import "github.com/google/uuid"
 
-type RetrieveResponse struct {
+type InvestorRetrieveResponse struct {
 	Id           uuid.UUID `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"` // investor id
 	Name         string    `json:"name" example:"John Doe"`                           // investor name
 	CompanyName  string    `json:"companyName" example:"Company Name"`                // investor company name

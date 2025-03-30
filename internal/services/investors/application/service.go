@@ -26,7 +26,7 @@ func New(
 	}
 }
 
-func (s *InvestorService) List() (*response.ListResponse, error) {
+func (s *InvestorService) List() (*response.InvestorListResponse, error) {
 	var (
 		investors []*domain.Investor
 		count     int
@@ -49,13 +49,13 @@ func (s *InvestorService) List() (*response.ListResponse, error) {
 		return nil, applicationError.Wrap(err)
 	}
 
-	res := &response.ListResponse{
-		Items: make([]*response.RetrieveResponse, len(investors)),
+	res := &response.InvestorListResponse{
+		Items: make([]*response.InvestorRetrieveResponse, len(investors)),
 		Count: count,
 	}
 
 	for i, investor := range investors {
-		res.Items[i] = &response.RetrieveResponse{
+		res.Items[i] = &response.InvestorRetrieveResponse{
 			Id:           investor.Id,
 			Name:         investor.Name,
 			CompanyName:  investor.CompanyName,
@@ -67,13 +67,13 @@ func (s *InvestorService) List() (*response.ListResponse, error) {
 	return res, nil
 }
 
-func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.RetrieveResponse, error) {
+func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.InvestorRetrieveResponse, error) {
 	investor, err := s.investorRepository.FindOneOrFail(nil, command.Id)
 	if err != nil {
 		return nil, applicationError.Wrap(err)
 	}
 
-	res := &response.RetrieveResponse{
+	res := &response.InvestorRetrieveResponse{
 		Id:           investor.Id,
 		Name:         investor.Name,
 		CompanyName:  investor.CompanyName,

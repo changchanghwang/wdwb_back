@@ -6,16 +6,56 @@ definitions:
         example: error message
         type: string
     type: object
-  response.ListResponse:
+  response.HoldingListResponse:
     properties:
       count:
         type: integer
       items:
         items:
-          $ref: '#/definitions/response.RetrieveResponse'
+          $ref: '#/definitions/response.HoldingRetrieveResponse'
         type: array
     type: object
-  response.RetrieveResponse:
+  response.HoldingRetrieveResponse:
+    properties:
+      id:
+        description: holding id
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      investorId:
+        description: investor id
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        description: holding name
+        example: Company Name
+        type: string
+      quarter:
+        description: holding quarter
+        example: 1
+        type: integer
+      shares:
+        description: number of stock shares
+        example: 1000
+        type: integer
+      value:
+        description: total amount of holding value
+        example: 1000000
+        type: integer
+      year:
+        description: holding year
+        example: 2021
+        type: integer
+    type: object
+  response.InvestorListResponse:
+    properties:
+      count:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/response.InvestorRetrieveResponse'
+        type: array
+    type: object
+  response.InvestorRetrieveResponse:
     properties:
       cik:
         description: investor company index key
@@ -49,6 +89,58 @@ info:
   title: wdwb API
   version: "1.0"
 paths:
+  /holdings:
+    get:
+      consumes:
+      - application/json
+      description: Get holdings list
+      parameters:
+      - in: query
+        name: investorId
+        required: true
+        type: string
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: quarter
+        required: true
+        type: integer
+      - in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get holdings list
+          schema:
+            $ref: '#/definitions/response.HoldingListResponse'
+        "400":
+          description: Bad request
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                errorMessage:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                errorMessage:
+                  type: string
+              type: object
+      summary: Get holdings list
+      tags:
+      - holdings
   /investors:
     get:
       consumes:
@@ -60,7 +152,7 @@ paths:
         "200":
           description: Successfully get investors list
           schema:
-            $ref: '#/definitions/response.ListResponse'
+            $ref: '#/definitions/response.InvestorListResponse'
         "400":
           description: Bad request
           schema:
@@ -99,7 +191,7 @@ paths:
         "200":
           description: Successfully retrieve investor
           schema:
-            $ref: '#/definitions/response.RetrieveResponse'
+            $ref: '#/definitions/response.InvestorRetrieveResponse'
         "400":
           description: Bad request
           schema:

@@ -31,7 +31,7 @@ func (c *InvestorController) Route(r fiber.Router) {
 // @Tags investors
 // @Accept json
 // @Produce json
-// @Success 200 {object} response.ListResponse "Successfully get investors list"
+// @Success 200 {object} response.InvestorListResponse "Successfully get investors list"
 // @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
 // @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /investors [get]
@@ -51,7 +51,7 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Investor ID"
-// @Success 200 {object} response.RetrieveResponse "Successfully retrieve investor"
+// @Success 200 {object} response.InvestorRetrieveResponse "Successfully retrieve investor"
 // @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
 // @Failure 404 {object} base.ErrorResponse{errorMessage=string} "Not found"
 // @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"

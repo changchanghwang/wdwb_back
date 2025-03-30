@@ -24,6 +24,17 @@ func (c *HoldingController) Route(r fiber.Router) {
 	r.Get("/", c.List)
 }
 
+// List godoc
+// @Summary Get holdings list
+// @Description Get holdings list
+// @Tags holdings
+// @Accept json
+// @Produce json
+// @Param query query commands.ListCommand true "List command"
+// @Success 200 {object} response.HoldingListResponse "Successfully get holdings list"
+// @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
+// @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
+// @Router /holdings [get]
 func (c *HoldingController) List(ctx *fiber.Ctx) error {
 	command := &commands.ListCommand{}
 	if err := ctx.QueryParser(command); err != nil {

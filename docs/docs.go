@@ -22,6 +22,95 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/holdings": {
+            "get": {
+                "description": "Get holdings list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "holdings"
+                ],
+                "summary": "Get holdings list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "investorId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "quarter",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully get holdings list",
+                        "schema": {
+                            "$ref": "#/definitions/response.HoldingListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "errorMessage": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "errorMessage": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/investors": {
             "get": {
                 "description": "Get investors list",
@@ -39,7 +128,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully get investors list",
                         "schema": {
-                            "$ref": "#/definitions/response.ListResponse"
+                            "$ref": "#/definitions/response.InvestorListResponse"
                         }
                     },
                     "400": {
@@ -107,7 +196,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieve investor",
                         "schema": {
-                            "$ref": "#/definitions/response.RetrieveResponse"
+                            "$ref": "#/definitions/response.InvestorRetrieveResponse"
                         }
                     },
                     "400": {
@@ -178,7 +267,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ListResponse": {
+        "response.HoldingListResponse": {
             "type": "object",
             "properties": {
                 "count": {
@@ -187,12 +276,66 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/response.RetrieveResponse"
+                        "$ref": "#/definitions/response.HoldingRetrieveResponse"
                     }
                 }
             }
         },
-        "response.RetrieveResponse": {
+        "response.HoldingRetrieveResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "holding id",
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "investorId": {
+                    "description": "investor id",
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "description": "holding name",
+                    "type": "string",
+                    "example": "Company Name"
+                },
+                "quarter": {
+                    "description": "holding quarter",
+                    "type": "integer",
+                    "example": 1
+                },
+                "shares": {
+                    "description": "number of stock shares",
+                    "type": "integer",
+                    "example": 1000
+                },
+                "value": {
+                    "description": "total amount of holding value",
+                    "type": "integer",
+                    "example": 1000000
+                },
+                "year": {
+                    "description": "holding year",
+                    "type": "integer",
+                    "example": 2021
+                }
+            }
+        },
+        "response.InvestorListResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.InvestorRetrieveResponse"
+                    }
+                }
+            }
+        },
+        "response.InvestorRetrieveResponse": {
             "type": "object",
             "properties": {
                 "cik": {

@@ -28,7 +28,7 @@ func New(holdingRepository infrastructure.HoldingRepository, db *gorm.DB, secCli
 	}
 }
 
-func (s *HoldingService) List(command *commands.ListCommand) (*response.ListResponse, error) {
+func (s *HoldingService) List(command *commands.ListCommand) (*response.HoldingListResponse, error) {
 	var (
 		holdings []*domain.Holding
 		count    int
@@ -57,13 +57,13 @@ func (s *HoldingService) List(command *commands.ListCommand) (*response.ListResp
 		return nil, applicationError.Wrap(err)
 	}
 
-	res := &response.ListResponse{
-		Items: make([]*response.RetrieveResponse, len(holdings)),
+	res := &response.HoldingListResponse{
+		Items: make([]*response.HoldingRetrieveResponse, len(holdings)),
 		Count: count,
 	}
 
 	for i, holding := range holdings {
-		res.Items[i] = &response.RetrieveResponse{
+		res.Items[i] = &response.HoldingRetrieveResponse{
 			Id:         holding.Id,
 			InvestorId: holding.InvestorId,
 			Name:       holding.Name,

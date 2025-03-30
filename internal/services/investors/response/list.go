@@ -1,6 +1,6 @@
 package response
 
-type ListResponse struct {
-	Items []*RetrieveResponse `json:"items"`
-	Count int                 `json:"count"`
+type InvestorListResponse struct {
+	Items []*InvestorRetrieveResponse `json:"items"`
+	Count int                         `json:"count"`
 }
