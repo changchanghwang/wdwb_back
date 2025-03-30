@@ -3,6 +3,7 @@ package presentation
 import (
 	"net/http"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/validate"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/commands"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
@@ -26,6 +27,10 @@ func (c *HoldingController) Route(r fiber.Router) {
 func (c *HoldingController) List(ctx *fiber.Ctx) error {
 	command := &commands.ListCommand{}
 	if err := ctx.QueryParser(command); err != nil {
+		return applicationError.Wrap(err)
+	}
+
+	if err := validate.ValidateStruct(command); err != nil {
 		return applicationError.Wrap(err)
 	}
 

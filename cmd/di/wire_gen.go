@@ -11,7 +11,9 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/sec-client"
 	"github.com/changchanghwang/wdwb_back/internal/server"
 	infrastructure3 "github.com/changchanghwang/wdwb_back/internal/services/filings/infrastructure"
+	application4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/application"
 	infrastructure4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
+	presentation4 "github.com/changchanghwang/wdwb_back/internal/services/holdings/presentation"
 	application3 "github.com/changchanghwang/wdwb_back/internal/services/investors/application"
 	infrastructure2 "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
 	presentation3 "github.com/changchanghwang/wdwb_back/internal/services/investors/presentation"
@@ -37,7 +39,9 @@ func InitializeServer() (*server.Server, error) {
 	syncController := presentation2.New(syncService)
 	investorService := application3.New(investorRepository, gormDB)
 	investorController := presentation3.New(investorService)
-	route := server.NewRoute(stockController, syncController, investorController)
+	holdingService := application4.New(holdingRepository, gormDB, secClientSecClient)
+	holdingController := presentation4.New(holdingService)
+	route := server.NewRoute(stockController, syncController, investorController, holdingController)
 	serverServer := server.New(route)
 	return serverServer, nil
 }

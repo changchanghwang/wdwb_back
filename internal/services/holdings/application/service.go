@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/changchanghwang/wdwb_back/internal/libs/db"
 	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	secClient "github.com/changchanghwang/wdwb_back/internal/libs/sec-client"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/commands"
@@ -8,6 +9,7 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/response"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
+	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 )
@@ -34,14 +36,20 @@ func (s *HoldingService) List(command *commands.ListCommand) (*response.ListResp
 
 	var eg errgroup.Group
 
+	conditions := &infrastructure.HoldingQueryConditions{
+		InvestorIds: []uuid.UUID{command.InvestorId},
+		Years:       []int{command.Year},
+		Quarters:    []int{command.Quarter},
+	}
+
 	eg.Go(func() error {
 		var err error
-		holdings, err = s.holdingRepository.FindAll(nil)
+		holdings, err = s.holdingRepository.Find(nil, conditions, nil, &db.OrderOptions{OrderBy: "value", Direction: "desc"})
 		return err
 	})
 	eg.Go(func() error {
 		var err error
-		count, err = s.holdingRepository.Count(nil)
+		count, err = s.holdingRepository.Count(nil, conditions)
 		return err
 	})
 
