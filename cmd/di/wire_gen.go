@@ -38,12 +38,12 @@ func InitializeServer() (*server.Server, error) {
 	holdingRepository := infrastructure4.New(gormDB)
 	syncService := application2.New(secClientSecClient, investorRepository, filingRepository, stockRepository, holdingRepository, gormDB)
 	syncController := presentation2.New(syncService)
-	investorService := application3.New(investorRepository, gormDB)
+	translator := translate.New()
+	investorService := application3.New(investorRepository, translator, gormDB)
 	investorController := presentation3.New(investorService)
-	holdingService := application4.New(holdingRepository, gormDB, secClientSecClient)
+	holdingService := application4.New(holdingRepository, translator, gormDB, secClientSecClient)
 	holdingController := presentation4.New(holdingService)
 	route := server.NewRoute(stockController, syncController, investorController, holdingController)
-	translator := translate.New()
 	serverServer := server.New(route, translator)
 	return serverServer, nil
 }

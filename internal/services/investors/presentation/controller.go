@@ -36,7 +36,9 @@ func (c *InvestorController) Route(r fiber.Router) {
 // @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /investors [get]
 func (c *InvestorController) List(ctx *fiber.Ctx) error {
-	res, err := c.investorService.List()
+	locale := ctx.Locals("language").(string)
+
+	res, err := c.investorService.List(locale)
 	if err != nil {
 		return applicationError.Wrap(err)
 	}
@@ -57,6 +59,8 @@ func (c *InvestorController) List(ctx *fiber.Ctx) error {
 // @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
 // @Router /investors/{id} [get]
 func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
+	locale := ctx.Locals("language").(string)
+
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return applicationError.New(http.StatusBadRequest, fmt.Sprintf("uuid parse error: %s", err.Error()), "ERR000")
@@ -70,7 +74,7 @@ func (c *InvestorController) Retrieve(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	res, err := c.investorService.Retrieve(retrieveCommand)
+	res, err := c.investorService.Retrieve(locale, retrieveCommand)
 	if err != nil {
 		return applicationError.Wrap(err)
 	}

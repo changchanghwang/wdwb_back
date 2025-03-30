@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/command"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors/domain"
 	investorInfra "github.com/changchanghwang/wdwb_back/internal/services/investors/infrastructure"
@@ -14,19 +15,22 @@ import (
 type InvestorService struct {
 	ddd.ApplicationService
 	investorRepository investorInfra.InvestorRepository
+	translator         *translate.Translator
 }
 
 func New(
 	investorRepository investorInfra.InvestorRepository,
+	translator *translate.Translator,
 	db *gorm.DB,
 ) *InvestorService {
 	return &InvestorService{
 		ApplicationService: ddd.ApplicationService{Manager: db},
 		investorRepository: investorRepository,
+		translator:         translator,
 	}
 }
 
-func (s *InvestorService) List() (*response.InvestorListResponse, error) {
+func (s *InvestorService) List(locale string) (*response.InvestorListResponse, error) {
 	var (
 		investors []*domain.Investor
 		count     int
@@ -57,8 +61,8 @@ func (s *InvestorService) List() (*response.InvestorListResponse, error) {
 	for i, investor := range investors {
 		res.Items[i] = &response.InvestorRetrieveResponse{
 			Id:           investor.Id,
-			Name:         investor.Name,
-			CompanyName:  investor.CompanyName,
+			Name:         s.translator.Translate("investors", locale, investor.Name),
+			CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName),
 			Cik:          investor.Cik,
 			HoldingValue: investor.HoldingValue,
 		}
@@ -67,7 +71,7 @@ func (s *InvestorService) List() (*response.InvestorListResponse, error) {
 	return res, nil
 }
 
-func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.InvestorRetrieveResponse, error) {
+func (s *InvestorService) Retrieve(locale string, command *command.RetrieveCommand) (*response.InvestorRetrieveResponse, error) {
 	investor, err := s.investorRepository.FindOneOrFail(nil, command.Id)
 	if err != nil {
 		return nil, applicationError.Wrap(err)
@@ -75,8 +79,8 @@ func (s *InvestorService) Retrieve(command *command.RetrieveCommand) (*response.
 
 	res := &response.InvestorRetrieveResponse{
 		Id:           investor.Id,
-		Name:         investor.Name,
-		CompanyName:  investor.CompanyName,
+		Name:         s.translator.Translate("investors", locale, investor.Name),
+		CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName),
 		Cik:          investor.Cik,
 		HoldingValue: investor.HoldingValue,
 	}
