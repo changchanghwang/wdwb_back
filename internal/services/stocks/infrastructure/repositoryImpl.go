@@ -12,11 +12,11 @@ import (
 )
 
 type StockRepositoryImpl struct {
-	ddd.Repository[domain.Stock]
+	ddd.Repository[*domain.Stock]
 }
 
 func New(manager *gorm.DB) StockRepository {
-	return &StockRepositoryImpl{ddd.Repository[domain.Stock]{Manager: manager}}
+	return &StockRepositoryImpl{ddd.Repository[*domain.Stock]{Manager: manager}}
 }
 
 func (r *StockRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Stock, error) {

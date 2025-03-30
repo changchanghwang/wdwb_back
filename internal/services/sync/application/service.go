@@ -112,7 +112,15 @@ func (s *SyncService) Sync() error {
 					return applicationError.Wrap(err)
 				}
 
-				filing, err := filingDomain.New("13F", newSecFiling.AccessionNumber, newSecFiling.InfoTableLink, newSecFiling.FilingDate, newSecFiling.ReportDate)
+				filing, err := filingDomain.New(
+					"13F",
+					newSecFiling.AccessionNumber,
+					newSecFiling.InfoTableLink,
+					investor.Id,
+					newSecFiling.FilingDate,
+					newSecFiling.ReportDate,
+				)
+
 				if err != nil {
 					return applicationError.Wrap(err)
 				}

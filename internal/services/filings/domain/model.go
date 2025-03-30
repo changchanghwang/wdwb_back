@@ -3,13 +3,15 @@ package domain
 import (
 	calendarDate "github.com/changchanghwang/wdwb_back/internal/libs/calendar-date"
 	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
+	"github.com/changchanghwang/wdwb_back/internal/services/filings/domain/events"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
+	"github.com/google/uuid"
 )
 
 type Filing struct {
 	ddd.Aggregate
 	Id              int                       `json:"id" gorm:"column:id; primaryKey; autoIncrement:true"`
-	InvestorId      string                    `json:"investorId" gorm:"type:varchar(36); column:investorId; not null;"`
+	InvestorId      uuid.UUID                 `json:"investorId" gorm:"type:varchar(36); column:investorId; not null;"`
 	Type            string                    `json:"type" gorm:"type:varchar(20); not null;"`
 	AccessionNumber string                    `json:"accessionNumber" gorm:"type:varchar(50); column:accessionNumber; not null;"`
 	FilledOn        calendarDate.CalendarDate `json:"filledOn" gorm:"type:date; column:filledOn; not null;"`
@@ -23,7 +25,7 @@ func (f *Filing) TableName() string {
 	return "filing"
 }
 
-func New(filingType, accessionNumber, link string, filledOn, reportedOn calendarDate.CalendarDate) (*Filing, error) {
+func New(filingType, accessionNumber, link string, investorId uuid.UUID, filledOn, reportedOn calendarDate.CalendarDate) (*Filing, error) {
 	year, err := reportedOn.Year()
 	if err != nil {
 		return nil, applicationError.Wrap(err)
@@ -33,7 +35,8 @@ func New(filingType, accessionNumber, link string, filledOn, reportedOn calendar
 		return nil, applicationError.Wrap(err)
 	}
 
-	return &Filing{
+	filing := &Filing{
+		InvestorId:      investorId,
 		Type:            filingType,
 		AccessionNumber: accessionNumber,
 		FilledOn:        filledOn,
@@ -41,5 +44,22 @@ func New(filingType, accessionNumber, link string, filledOn, reportedOn calendar
 		Year:            year,
 		Quarter:         quarter,
 		Link:            link,
-	}, nil
+	}
+
+	filing.PublishEvent(
+		ddd.NewEvent(
+			"FilingRegisteredEvent",
+			&events.FilingRegisteredEvent{
+				FilingId:        filing.Id,
+				InvestorId:      filing.InvestorId,
+				FilingType:      filing.Type,
+				AccessionNumber: filing.AccessionNumber,
+				FilledOn:        filing.FilledOn,
+				ReportedOn:      filing.ReportedOn,
+				Link:            filing.Link,
+			},
+		),
+	)
+
+	return filing, nil
 }

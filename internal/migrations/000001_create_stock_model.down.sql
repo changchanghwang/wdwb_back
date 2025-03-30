@@ -1,1 +1,1 @@
-DROP TABLE stock;
+DROP TABLE IF EXISTS stock;

@@ -12,11 +12,11 @@ import (
 )
 
 type InvestorRepositoryImpl struct {
-	ddd.Repository[domain.Investor]
+	ddd.Repository[*domain.Investor]
 }
 
 func New(manager *gorm.DB) InvestorRepository {
-	return &InvestorRepositoryImpl{ddd.Repository[domain.Investor]{Manager: manager}}
+	return &InvestorRepositoryImpl{ddd.Repository[*domain.Investor]{Manager: manager}}
 }
 
 func (r *InvestorRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Investor, error) {

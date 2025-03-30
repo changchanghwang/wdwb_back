@@ -12,11 +12,11 @@ import (
 )
 
 type HoldingRepositoryImpl struct {
-	ddd.Repository[domain.Holding]
+	ddd.Repository[*domain.Holding]
 }
 
 func New(manager *gorm.DB) HoldingRepository {
-	return &HoldingRepositoryImpl{ddd.Repository[domain.Holding]{Manager: manager}}
+	return &HoldingRepositoryImpl{ddd.Repository[*domain.Holding]{Manager: manager}}
 }
 
 func (r *HoldingRepositoryImpl) Find(db *gorm.DB, conditions *HoldingQueryConditions, options *db.FindOptions, orderOptions *db.OrderOptions) ([]*domain.Holding, error) {

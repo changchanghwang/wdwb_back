@@ -1,1 +1,1 @@
-DROP TABLE holding;
+DROP TABLE IF EXISTS holding;

@@ -11,11 +11,11 @@ import (
 )
 
 type FilingRepositoryImpl struct {
-	ddd.Repository[domain.Filing]
+	ddd.Repository[*domain.Filing]
 }
 
 func New(manager *gorm.DB) FilingRepository {
-	return &FilingRepositoryImpl{ddd.Repository[domain.Filing]{Manager: manager}}
+	return &FilingRepositoryImpl{ddd.Repository[*domain.Filing]{Manager: manager}}
 }
 
 func (r *FilingRepositoryImpl) FindByAccessionNumbers(db *gorm.DB, accessionNumbers []string) ([]*domain.Filing, error) {
