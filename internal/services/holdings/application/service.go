@@ -60,6 +60,7 @@ func (s *HoldingService) List(locale string, command *commands.ListCommand) (*re
 		return nil, applicationError.Wrap(err)
 	}
 
+	// TODO: unify same cik
 	res := &response.HoldingListResponse{
 		Items: make([]*response.HoldingRetrieveResponse, len(holdings)),
 		Count: count,
