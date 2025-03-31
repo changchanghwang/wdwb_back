@@ -10,6 +10,7 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/response"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
+	"github.com/changchanghwang/wdwb_back/pkg/util"
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
@@ -52,7 +53,7 @@ func (s *HoldingService) List(locale string, command *commands.ListCommand) (*re
 	})
 	eg.Go(func() error {
 		var err error
-		count, err = s.holdingRepository.Count(nil, conditions)
+		count, err = s.holdingRepository.Count(nil, conditions, &db.FindOptions{GroupBy: "cik"})
 		return err
 	})
 
@@ -61,21 +62,34 @@ func (s *HoldingService) List(locale string, command *commands.ListCommand) (*re
 	}
 
 	// TODO: unify same cik
+	holdingGroup := util.GroupBy(holdings, func(holding *domain.Holding) string {
+		return holding.Cik
+	})
+
 	res := &response.HoldingListResponse{
-		Items: make([]*response.HoldingRetrieveResponse, len(holdings)),
+		Items: make([]*response.HoldingRetrieveResponse, 0, len(holdingGroup)),
 		Count: count,
 	}
 
-	for i, holding := range holdings {
-		res.Items[i] = &response.HoldingRetrieveResponse{
-			Id:         holding.Id,
-			InvestorId: holding.InvestorId,
-			Name:       s.translator.Translate("companies", locale, holding.Name),
-			Year:       holding.Year,
-			Quarter:    holding.Quarter,
-			Value:      holding.Value,
-			Shares:     holding.Shares,
+	for _, holdings := range holdingGroup {
+		firstHolding := holdings[0]
+		value := 0
+		shares := 0
+		for _, holding := range holdings {
+			value += holding.Value
+			shares += holding.Shares
 		}
+
+		res.Items = append(res.Items, &response.HoldingRetrieveResponse{
+			Id:         firstHolding.Cik,
+			InvestorId: firstHolding.InvestorId,
+			Name:       s.translator.Translate("companies", locale, firstHolding.Name, false),
+			Year:       firstHolding.Year,
+			Quarter:    firstHolding.Quarter,
+			Value:      value,
+			Shares:     shares,
+			Translated: firstHolding.Name != s.translator.Translate("companies", locale, firstHolding.Name, false),
+		})
 	}
 
 	return res, nil

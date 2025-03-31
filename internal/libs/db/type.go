@@ -1,8 +1,9 @@
 package db
 
 type FindOptions struct {
-	Offset int
-	Limit  int
+	Offset  int
+	Limit   int
+	GroupBy string
 }
 
 type OrderOptions struct {

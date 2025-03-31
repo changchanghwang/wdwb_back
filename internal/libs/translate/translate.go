@@ -70,11 +70,19 @@ func (t *Translator) LoadTranslations() error {
 	return nil
 }
 
-func (t *Translator) Translate(category, lang, key string) string {
+func (t *Translator) Translate(category, lang, key string, alternative bool) string {
 	if trans, ok := t.translations[category]; ok {
 		if langTrans, ok := trans[lang]; ok {
 			if value, ok := langTrans[key]; ok {
 				return value
+			}
+		}
+
+		if alternative {
+			if langTrans, ok := trans["en"]; ok {
+				if value, ok := langTrans[key]; ok {
+					return value
+				}
 			}
 		}
 	}

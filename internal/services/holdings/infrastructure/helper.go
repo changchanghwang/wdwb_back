@@ -32,7 +32,15 @@ func applyConditions(conditions *HoldingQueryConditions) func(db *gorm.DB) *gorm
 func applyOptions(options *db.FindOptions, orderOptions *db.OrderOptions) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if options != nil {
-			db = db.Offset(options.Offset).Limit(options.Limit)
+			if options.Offset != 0 {
+				db = db.Offset(options.Offset)
+			}
+			if options.Limit != 0 {
+				db = db.Limit(options.Limit)
+			}
+			if options.GroupBy != "" {
+				db = db.Group(options.GroupBy)
+			}
 		}
 
 		if orderOptions != nil {

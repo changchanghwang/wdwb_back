@@ -61,8 +61,8 @@ func (s *InvestorService) List(locale string) (*response.InvestorListResponse, e
 	for i, investor := range investors {
 		res.Items[i] = &response.InvestorRetrieveResponse{
 			Id:           investor.Id,
-			Name:         s.translator.Translate("investors", locale, investor.Name),
-			CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName),
+			Name:         s.translator.Translate("investors", locale, investor.Name, true),
+			CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName, true),
 			Cik:          investor.Cik,
 			HoldingValue: investor.HoldingValue,
 		}
@@ -79,8 +79,8 @@ func (s *InvestorService) Retrieve(locale string, command *command.RetrieveComma
 
 	res := &response.InvestorRetrieveResponse{
 		Id:           investor.Id,
-		Name:         s.translator.Translate("investors", locale, investor.Name),
-		CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName),
+		Name:         s.translator.Translate("investors", locale, investor.Name, true),
+		CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName, true),
 		Cik:          investor.Cik,
 		HoldingValue: investor.HoldingValue,
 	}

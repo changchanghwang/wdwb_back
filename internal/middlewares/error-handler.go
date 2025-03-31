@@ -22,7 +22,7 @@ func NewErrorHandler(translator *translate.Translator) *ErrorHandler {
 func (h *ErrorHandler) Middleware(ctx *fiber.Ctx, err error) error {
 	locale := ctx.Locals("language").(string)
 	if e, ok := err.(*fiber.Error); ok {
-		translatedMessage := h.translator.Translate("error-message", locale, "ERRC500")
+		translatedMessage := h.translator.Translate("error-message", locale, "ERRC500", false)
 		return ctx.Status(e.Code).JSON(base.ErrorResponse{ErrorMessage: translatedMessage})
 	}
 
@@ -32,6 +32,6 @@ func (h *ErrorHandler) Middleware(ctx *fiber.Ctx, err error) error {
 	//TODO: log error with something (e.g. Sentry, ELK, File, etc.)
 	fmt.Println(e.Stack)
 
-	translatedMessage := h.translator.Translate("error-message", locale, e.ErrorCode)
+	translatedMessage := h.translator.Translate("error-message", locale, e.ErrorCode, false)
 	return ctx.Status(e.StatusCode).JSON(base.ErrorResponse{ErrorMessage: translatedMessage})
 }

@@ -34,12 +34,12 @@ func (r *HoldingRepositoryImpl) Find(db *gorm.DB, conditions *HoldingQueryCondit
 	return holdings, nil
 }
 
-func (r *HoldingRepositoryImpl) Count(db *gorm.DB, conditions *HoldingQueryConditions) (int, error) {
+func (r *HoldingRepositoryImpl) Count(db *gorm.DB, conditions *HoldingQueryConditions, options *db.FindOptions) (int, error) {
 	if db == nil {
 		db = r.Manager
 	}
 
-	db = db.Scopes(applyConditions(conditions))
+	db = db.Scopes(applyConditions(conditions), applyOptions(options, nil))
 
 	var count int64
 	if err := db.Model(&domain.Holding{}).Count(&count).Error; err != nil {
