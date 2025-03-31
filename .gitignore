@@ -29,3 +29,6 @@ go.work.sum
 
 #infoJson
 info-json/*
+
+#translation file
+internal/libs/translate/languages/*
