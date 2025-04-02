@@ -19,13 +19,13 @@ func New(manager *gorm.DB) StockRepository {
 	return &StockRepositoryImpl{ddd.Repository[*domain.Stock]{Manager: manager}}
 }
 
-func (r *StockRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Stock, error) {
-	if db == nil {
-		db = r.Manager
+func (r *StockRepositoryImpl) FindOneOrFail(manager *gorm.DB, id uuid.UUID) (*domain.Stock, error) {
+	if manager == nil {
+		manager = r.Manager
 	}
 
 	var stock *domain.Stock
-	if err := db.Where("id = ?", id).First(&stock).Error; err != nil {
+	if err := manager.Where("id = ?", id).First(&stock).Error; err != nil {
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findById. %s", err.Error()), "")
 	}
 	if stock == nil {
@@ -35,36 +35,36 @@ func (r *StockRepositoryImpl) FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.
 	return stock, nil
 }
 
-func (r *StockRepositoryImpl) Save(db *gorm.DB, stocks []*domain.Stock) error {
-	if db == nil {
-		db = r.Manager
+func (r *StockRepositoryImpl) Save(manager *gorm.DB, stocks []*domain.Stock) error {
+	if manager == nil {
+		manager = r.Manager
 	}
 
-	if err := db.Save(stocks).Error; err != nil {
+	if err := manager.Save(stocks).Error; err != nil {
 		return applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to save. %s", err.Error()), "")
 	}
 	return nil
 }
 
-func (r *StockRepositoryImpl) FindAll(db *gorm.DB) ([]*domain.Stock, error) {
-	if db == nil {
-		db = r.Manager
+func (r *StockRepositoryImpl) FindAll(manager *gorm.DB) ([]*domain.Stock, error) {
+	if manager == nil {
+		manager = r.Manager
 	}
 
 	var stocks []*domain.Stock
-	if err := db.Find(&stocks).Error; err != nil {
+	if err := manager.Find(&stocks).Error; err != nil {
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findAll. %s", err.Error()), "")
 	}
 	return stocks, nil
 }
 
-func (r *StockRepositoryImpl) FindByCusips(db *gorm.DB, cusips []string) ([]*domain.Stock, error) {
-	if db == nil {
-		db = r.Manager
+func (r *StockRepositoryImpl) FindByCusips(manager *gorm.DB, cusips []string) ([]*domain.Stock, error) {
+	if manager == nil {
+		manager = r.Manager
 	}
 
 	var stocks []*domain.Stock
-	if err := db.Where("cusip IN ?", cusips).Find(&stocks).Error; err != nil {
+	if err := manager.Where("cusip IN ?", cusips).Find(&stocks).Error; err != nil {
 		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findByCusips. %s", err.Error()), "")
 	}
 

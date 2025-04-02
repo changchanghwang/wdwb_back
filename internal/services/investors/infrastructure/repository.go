@@ -7,7 +7,7 @@ import (
 )
 
 type InvestorRepository interface {
-	FindAll(db *gorm.DB) ([]*domain.Investor, error)
-	Count(db *gorm.DB) (int, error)
-	FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Investor, error)
+	FindAll(manager *gorm.DB) ([]*domain.Investor, error)
+	Count(manager *gorm.DB) (int, error)
+	FindOneOrFail(manager *gorm.DB, id uuid.UUID) (*domain.Investor, error)
 }

@@ -7,8 +7,8 @@ import (
 )
 
 type StockRepository interface {
-	FindAll(db *gorm.DB) ([]*domain.Stock, error)
-	FindByCusips(db *gorm.DB, cusips []string) ([]*domain.Stock, error)
-	FindOneOrFail(db *gorm.DB, id uuid.UUID) (*domain.Stock, error)
-	Save(db *gorm.DB, stocks []*domain.Stock) error
+	FindAll(manager *gorm.DB) ([]*domain.Stock, error)
+	FindByCusips(manager *gorm.DB, cusips []string) ([]*domain.Stock, error)
+	FindOneOrFail(manager *gorm.DB, id uuid.UUID) (*domain.Stock, error)
+	Save(manager *gorm.DB, stocks []*domain.Stock) error
 }

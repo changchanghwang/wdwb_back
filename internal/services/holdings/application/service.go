@@ -9,6 +9,7 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/domain"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings/response"
+	stockInfra "github.com/changchanghwang/wdwb_back/internal/services/stocks/infrastructure"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/changchanghwang/wdwb_back/pkg/util"
 	"github.com/google/uuid"
@@ -19,13 +20,21 @@ import (
 type HoldingService struct {
 	*ddd.ApplicationService
 	holdingRepository infrastructure.HoldingRepository
+	stockRepository   stockInfra.StockRepository
 	secClient         *secClient.SecClient
 	translator        *translate.Translator
 }
 
-func New(holdingRepository infrastructure.HoldingRepository, translator *translate.Translator, db *gorm.DB, secClient *secClient.SecClient) *HoldingService {
+func New(
+	holdingRepository infrastructure.HoldingRepository,
+	stockRepository stockInfra.StockRepository,
+	translator *translate.Translator,
+	db *gorm.DB,
+	secClient *secClient.SecClient,
+) *HoldingService {
 	return &HoldingService{
 		holdingRepository:  holdingRepository,
+		stockRepository:    stockRepository,
 		ApplicationService: &ddd.ApplicationService{Manager: db},
 		secClient:          secClient,
 		translator:         translator,
@@ -61,7 +70,6 @@ func (s *HoldingService) List(locale string, command *commands.ListCommand) (*re
 		return nil, applicationError.Wrap(err)
 	}
 
-	// TODO: unify same cik
 	holdingGroup := util.GroupBy(holdings, func(holding *domain.Holding) string {
 		return holding.Cik
 	})

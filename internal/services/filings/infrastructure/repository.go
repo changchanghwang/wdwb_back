@@ -6,6 +6,6 @@ import (
 )
 
 type FilingRepository interface {
-	FindByAccessionNumbers(db *gorm.DB, accessionNumbers []string) ([]*domain.Filing, error)
-	Save(db *gorm.DB, filings []*domain.Filing) error
+	FindByAccessionNumbers(manager *gorm.DB, accessionNumbers []string) ([]*domain.Filing, error)
+	Save(manager *gorm.DB, filings []*domain.Filing) error
 }

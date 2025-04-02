@@ -18,13 +18,13 @@ func New(manager *gorm.DB) FilingRepository {
 	return &FilingRepositoryImpl{ddd.Repository[*domain.Filing]{Manager: manager}}
 }
 
-func (r *FilingRepositoryImpl) FindByAccessionNumbers(db *gorm.DB, accessionNumbers []string) ([]*domain.Filing, error) {
-	if db == nil {
-		db = r.Manager
+func (r *FilingRepositoryImpl) FindByAccessionNumbers(manager *gorm.DB, accessionNumbers []string) ([]*domain.Filing, error) {
+	if manager == nil {
+		manager = r.Manager
 	}
 
 	var filings []*domain.Filing
-	if err := db.Where("accessionNumber IN ?", accessionNumbers).Find(&filings).Error; err != nil {
+	if err := manager.Where("accessionNumber IN ?", accessionNumbers).Find(&filings).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return []*domain.Filing{}, nil
 		}

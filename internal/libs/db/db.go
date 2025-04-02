@@ -31,3 +31,25 @@ func Init() *gorm.DB {
 
 	return db
 }
+
+func ApplyOptions(options *FindOptions, orderOptions *OrderOptions) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if options != nil {
+			if options.Offset != 0 {
+				db = db.Offset(options.Offset)
+			}
+			if options.Limit != 0 {
+				db = db.Limit(options.Limit)
+			}
+			if options.GroupBy != "" {
+				db = db.Group(options.GroupBy)
+			}
+		}
+
+		if orderOptions != nil {
+			db = db.Order(fmt.Sprintf("%s %s", orderOptions.OrderBy, orderOptions.Direction))
+		}
+
+		return db
+	}
+}

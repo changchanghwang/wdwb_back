@@ -1,11 +1,15 @@
 package infrastructure
 
 import (
-	"fmt"
-
-	"github.com/changchanghwang/wdwb_back/internal/libs/db"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type HoldingQueryConditions struct {
+	InvestorIds []uuid.UUID
+	Years       []int
+	Quarters    []int
+}
 
 func applyConditions(conditions *HoldingQueryConditions) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
@@ -23,28 +27,6 @@ func applyConditions(conditions *HoldingQueryConditions) func(db *gorm.DB) *gorm
 
 		if len(conditions.Quarters) > 0 {
 			db = db.Where("quarter IN ?", conditions.Quarters)
-		}
-
-		return db
-	}
-}
-
-func applyOptions(options *db.FindOptions, orderOptions *db.OrderOptions) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if options != nil {
-			if options.Offset != 0 {
-				db = db.Offset(options.Offset)
-			}
-			if options.Limit != 0 {
-				db = db.Limit(options.Limit)
-			}
-			if options.GroupBy != "" {
-				db = db.Group(options.GroupBy)
-			}
-		}
-
-		if orderOptions != nil {
-			db = db.Order(fmt.Sprintf("%s %s", orderOptions.OrderBy, orderOptions.Direction))
 		}
 
 		return db
