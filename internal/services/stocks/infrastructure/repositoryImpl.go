@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/db"
 	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/domain"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
@@ -46,27 +47,16 @@ func (r *StockRepositoryImpl) Save(manager *gorm.DB, stocks []*domain.Stock) err
 	return nil
 }
 
-func (r *StockRepositoryImpl) FindAll(manager *gorm.DB) ([]*domain.Stock, error) {
+func (r *StockRepositoryImpl) Find(manager *gorm.DB, conditions *StockQueryConditions, options *db.FindOptions, orderOptions *db.OrderOptions) ([]*domain.Stock, error) {
 	if manager == nil {
 		manager = r.Manager
 	}
+
+	manager = manager.Scopes(applyConditions(conditions), db.ApplyOptions(options, orderOptions))
 
 	var stocks []*domain.Stock
 	if err := manager.Find(&stocks).Error; err != nil {
-		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findAll. %s", err.Error()), "")
+		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to find. %s", err.Error()), "")
 	}
-	return stocks, nil
-}
-
-func (r *StockRepositoryImpl) FindByCusips(manager *gorm.DB, cusips []string) ([]*domain.Stock, error) {
-	if manager == nil {
-		manager = r.Manager
-	}
-
-	var stocks []*domain.Stock
-	if err := manager.Where("cusip IN ?", cusips).Find(&stocks).Error; err != nil {
-		return nil, applicationError.New(http.StatusInternalServerError, fmt.Sprintf("Failed to findByCusips. %s", err.Error()), "")
-	}
-
 	return stocks, nil
 }

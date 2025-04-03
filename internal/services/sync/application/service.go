@@ -70,7 +70,9 @@ func (s *SyncService) Sync() (string, error) {
 			}
 
 			// 13F 목록 조회
-			filings, err := s.filingRepository.FindByAccessionNumbers(tx, accessionNumbers)
+			filings, err := s.filingRepository.Find(tx, &filingInfra.FilingQueryConditions{
+				AccessionNumbers: accessionNumbers,
+			}, nil, nil)
 			if err != nil {
 				return applicationError.Wrap(err)
 			}
@@ -109,7 +111,10 @@ func (s *SyncService) Sync() (string, error) {
 					cusips[i] = holding.Cusip
 				}
 
-				stocks, err := s.stockRepository.FindByCusips(tx, cusips)
+				stocks, err := s.stockRepository.Find(tx, &stockInfra.StockQueryConditions{
+					Cusips: cusips,
+				}, nil, nil)
+
 				if err != nil {
 					return applicationError.Wrap(err)
 				}
