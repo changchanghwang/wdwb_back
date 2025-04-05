@@ -65,6 +65,7 @@ func (s *InvestorService) List(locale string) (*response.InvestorListResponse, e
 			CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName, true),
 			Cik:          investor.Cik,
 			HoldingValue: investor.HoldingValue,
+			Url:          investor.Url,
 		}
 	}
 
@@ -83,6 +84,7 @@ func (s *InvestorService) Retrieve(locale string, command *command.RetrieveComma
 		CompanyName:  s.translator.Translate("companies", locale, investor.CompanyName, true),
 		Cik:          investor.Cik,
 		HoldingValue: investor.HoldingValue,
+		Url:          investor.Url,
 	}
 
 	return res, nil

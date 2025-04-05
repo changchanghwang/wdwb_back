@@ -12,6 +12,7 @@ type Investor struct {
 	CompanyName  string    `json:"companyName" gorm:"type:varchar(255); column:companyName; not null;"`
 	Cik          string    `json:"cik" gorm:"type:varchar(20);  not null;"`
 	HoldingValue int       `json:"holdingValue" gorm:"type:bigint; column:holdingValue; not null;"`
+	Url          string    `json:"url" gorm:"type:varchar(255); column:url;"`
 }
 
 func (u *Investor) TableName() string {

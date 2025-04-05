@@ -5,6 +5,7 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/config"
 	holdings "github.com/changchanghwang/wdwb_back/internal/services/holdings/presentation"
 	investors "github.com/changchanghwang/wdwb_back/internal/services/investors/presentation"
+	ranks "github.com/changchanghwang/wdwb_back/internal/services/ranks/presentation"
 	stocks "github.com/changchanghwang/wdwb_back/internal/services/stocks/presentation"
 	sync "github.com/changchanghwang/wdwb_back/internal/services/sync/presentation"
 	"github.com/gofiber/fiber/v2"
@@ -12,23 +13,26 @@ import (
 )
 
 type Route struct {
-	stocks   *stocks.StockController
-	sync     *sync.SyncController
-	investor *investors.InvestorController
-	holding  *holdings.HoldingController
+	stocks    *stocks.StockController
+	sync      *sync.SyncController
+	investors *investors.InvestorController
+	holdings  *holdings.HoldingController
+	ranks     *ranks.RankController
 }
 
 func NewRoute(
 	stocks *stocks.StockController,
 	sync *sync.SyncController,
-	investor *investors.InvestorController,
-	holding *holdings.HoldingController,
+	investors *investors.InvestorController,
+	holdings *holdings.HoldingController,
+	ranks *ranks.RankController,
 ) *Route {
 	return &Route{
-		stocks:   stocks,
-		sync:     sync,
-		investor: investor,
-		holding:  holding,
+		stocks:    stocks,
+		sync:      sync,
+		investors: investors,
+		holdings:  holdings,
+		ranks:     ranks,
 	}
 }
 
@@ -58,9 +62,13 @@ func (r *Route) Route(app *fiber.App) {
 
 	// investors
 	investorsGroup := app.Group("/investors")
-	r.investor.Route(investorsGroup)
+	r.investors.Route(investorsGroup)
 
 	// holdings
 	holdingsGroup := app.Group("/holdings")
-	r.holding.Route(holdingsGroup)
+	r.holdings.Route(holdingsGroup)
+
+	// ranks
+	ranksGroup := app.Group("/ranks")
+	r.ranks.Route(ranksGroup)
 }

@@ -1,0 +1,1 @@
+ALTER TABLE investor ADD COLUMN url VARCHAR(255);

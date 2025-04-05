@@ -11,6 +11,7 @@ import (
 	"github.com/changchanghwang/wdwb_back/internal/services/filings"
 	"github.com/changchanghwang/wdwb_back/internal/services/holdings"
 	"github.com/changchanghwang/wdwb_back/internal/services/investors"
+	"github.com/changchanghwang/wdwb_back/internal/services/ranks"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks"
 	"github.com/changchanghwang/wdwb_back/internal/services/sync"
 	"github.com/google/wire"
@@ -27,6 +28,7 @@ func InitializeServer() (*server.Server, error) {
 		holdings.HoldingSet,
 		sync.SyncSet,
 		translate.TranslateSet,
+		ranks.RankSet,
 	)
 	return &server.Server{}, nil
 }
