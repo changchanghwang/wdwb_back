@@ -39,7 +39,7 @@ type Rank struct {
 	Value         int       `json:"value" gorm:"type:bigint; not null;"`
 	Tickers       []string  `json:"tickers" gorm:"type:text;serializer:json"`
 	Name          string    `json:"name" gorm:"type:varchar(255); not null;"`
-	InvestorId    string    `json:"investorId" gorm:"type:varchar(36); not null;"`
+	InvestorId    string    `json:"investorId" gorm:"type:varchar(36); column:investorId; not null;"`
 	LastUpdatedAt time.Time `json:"lastUpdatedAt" gorm:"type:datetime; column:lastUpdatedAt; not null;"`
 }
 
@@ -61,8 +61,8 @@ func New(rankType RankType, year, quarter, rank, value int, tickers []string, na
 		Rank:          rank,
 		Value:         value,
 		Tickers:       tickers,
-		LastUpdatedAt: time.Now(),
 		Name:          name,
 		InvestorId:    investorId,
+		LastUpdatedAt: time.Now(),
 	}, nil
 }
