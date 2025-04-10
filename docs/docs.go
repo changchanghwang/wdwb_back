@@ -255,6 +255,94 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/ranks": {
+            "get": {
+                "description": "Rank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ranks"
+                ],
+                "summary": "Rank",
+                "parameters": [
+                    {
+                        "description": "Rank command",
+                        "name": "command",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.RankCommand"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieve investor",
+                        "schema": {
+                            "$ref": "#/definitions/response.RankResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "errorMessage": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "errorMessage": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/base.ErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "errorMessage": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -266,6 +354,79 @@ const docTemplate = `{
                     "example": "error message"
                 }
             }
+        },
+        "commands.RankCommand": {
+            "type": "object",
+            "required": [
+                "year"
+            ],
+            "properties": {
+                "quarter": {
+                    "description": "1, 2, 3, 4 optional",
+                    "type": "integer"
+                },
+                "year": {
+                    "description": "2024",
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.Rank": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "investorId": {
+                    "type": "string"
+                },
+                "lastUpdatedAt": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quarter": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "tickers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.RankType"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.RankType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "x-enum-varnames": [
+                "TopBuyQuarter",
+                "TopSellQuarter",
+                "TopHoldingQuarter",
+                "TopBuyYear",
+                "TopSellYear",
+                "TopHoldingYear"
+            ]
         },
         "response.HoldingListResponse": {
             "type": "object",
@@ -285,9 +446,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "holding id",
+                    "description": "holding cik",
                     "type": "string",
-                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                    "example": "0001067983"
                 },
                 "investorId": {
                     "description": "investor id",
@@ -308,6 +469,11 @@ const docTemplate = `{
                     "description": "number of stock shares",
                     "type": "integer",
                     "example": 1000
+                },
+                "translated": {
+                    "description": "whether the holding name is translated",
+                    "type": "boolean",
+                    "example": true
                 },
                 "value": {
                     "description": "total amount of holding value",
@@ -362,6 +528,58 @@ const docTemplate = `{
                     "description": "investor name",
                     "type": "string",
                     "example": "John Doe"
+                },
+                "url": {
+                    "description": "investor image url",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/image/image.png"
+                }
+            }
+        },
+        "response.RankResponse": {
+            "type": "object",
+            "properties": {
+                "topBuyQuarter": {
+                    "description": "buy ranking per quarter",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
+                },
+                "topBuyYear": {
+                    "description": "buy ranking per year",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
+                },
+                "topHoldingQuarter": {
+                    "description": "holding ranking per quarter",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
+                },
+                "topHoldingYear": {
+                    "description": "holding ranking per year",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
+                },
+                "topSellQuarter": {
+                    "description": "sell ranking per quarter",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
+                },
+                "topSellYear": {
+                    "description": "sell ranking per year",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Rank"
+                    }
                 }
             }
         }

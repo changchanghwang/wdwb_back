@@ -37,6 +37,7 @@ func (c *HoldingController) Route(r fiber.Router) {
 // @Router /holdings [get]
 func (c *HoldingController) List(ctx *fiber.Ctx) error {
 	language := ctx.Locals("language").(string)
+
 	command := &commands.ListCommand{}
 	if err := ctx.QueryParser(command); err != nil {
 		return applicationError.Wrap(err)

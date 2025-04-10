@@ -3,6 +3,7 @@ package presentation
 import (
 	"net/http"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/validate"
 	"github.com/changchanghwang/wdwb_back/internal/services/ranks/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/ranks/commands"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
@@ -18,20 +19,38 @@ func New(rankService *application.RankService) *RankController {
 }
 
 func (c *RankController) Route(r fiber.Router) {
-	r.Post("/", c.Rank)
+	r.Get("/", c.Rank)
 }
 
+// Rank godoc
+// @Summary Rank
+// @Description Rank
+// @Tags ranks
+// @Accept json
+// @Produce json
+// @Param command body commands.RankCommand true "Rank command"
+// @Success 200 {object} response.RankResponse "Successfully retrieve investor"
+// @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
+// @Failure 404 {object} base.ErrorResponse{errorMessage=string} "Not found"
+// @Failure 500 {object} base.ErrorResponse{errorMessage=string} "Internal server error"
+// @Router /ranks [get]
 func (c *RankController) Rank(ctx *fiber.Ctx) error {
-	var command *commands.RankCommand
+	language := ctx.Locals("language").(string)
 
-	ctx.BodyParser(&command)
+	command := &commands.RankCommand{}
 
-	err := c.rankService.Rank(*command)
+	if err := ctx.QueryParser(command); err != nil {
+		return applicationError.Wrap(err)
+	}
+
+	if err := validate.ValidateStruct(command); err != nil {
+		return applicationError.Wrap(err)
+	}
+
+	rankResponse, err := c.rankService.Rank(language, *command)
 	if err != nil {
 		return applicationError.Wrap(err)
 	}
 
-	message := "랭킹이 성공적으로 생성되었습니다"
-
-	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": message})
+	return ctx.Status(http.StatusOK).JSON(rankResponse)
 }

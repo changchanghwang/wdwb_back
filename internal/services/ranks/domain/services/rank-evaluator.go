@@ -4,6 +4,7 @@ import (
 	"slices"
 	"sort"
 
+	"github.com/changchanghwang/wdwb_back/internal/libs/translate"
 	holdingDomain "github.com/changchanghwang/wdwb_back/internal/services/holdings/domain"
 	holdingInfra "github.com/changchanghwang/wdwb_back/internal/services/holdings/infrastructure"
 	rank "github.com/changchanghwang/wdwb_back/internal/services/ranks/domain"
@@ -17,14 +18,15 @@ import (
 type RankEvaluator struct {
 	holdingRepository holdingInfra.HoldingRepository
 	stockRepository   stockInfra.StockRepository
+	translator        *translate.Translator
 }
 
-func NewRankEvaluator(holdingRepository holdingInfra.HoldingRepository, stockRepository stockInfra.StockRepository) *RankEvaluator {
-	return &RankEvaluator{holdingRepository: holdingRepository, stockRepository: stockRepository}
+func NewRankEvaluator(holdingRepository holdingInfra.HoldingRepository, stockRepository stockInfra.StockRepository, translator *translate.Translator) *RankEvaluator {
+	return &RankEvaluator{holdingRepository: holdingRepository, stockRepository: stockRepository, translator: translator}
 }
 
 // TODO: idempotency
-func (r *RankEvaluator) Evaluate(db *gorm.DB, year int, quarter int) ([]*rank.Rank, error) {
+func (r *RankEvaluator) Evaluate(language string, db *gorm.DB, year int, quarter int) ([]*rank.Rank, error) {
 	var result []*rank.Rank
 	if quarter != 0 {
 		lastQuarterYear := year
@@ -44,17 +46,17 @@ func (r *RankEvaluator) Evaluate(db *gorm.DB, year int, quarter int) ([]*rank.Ra
 			return nil, applicationError.Wrap(err)
 		}
 
-		ranks, err := r.evaluateTopBuyQuarter(db, thisQuarterHoldings, lastQuarterHoldings)
+		ranks, err := r.evaluateTopBuyQuarter(language, db, thisQuarterHoldings, lastQuarterHoldings)
 		if err != nil {
 			return nil, applicationError.Wrap(err)
 		}
 		result = append(result, ranks...)
-		ranks, err = r.evaluateTopSellQuarter(db, thisQuarterHoldings, lastQuarterHoldings)
+		ranks, err = r.evaluateTopSellQuarter(language, db, thisQuarterHoldings, lastQuarterHoldings)
 		if err != nil {
 			return nil, applicationError.Wrap(err)
 		}
 		result = append(result, ranks...)
-		ranks, err = r.evaluateTopHoldingQuarter(db, thisQuarterHoldings)
+		ranks, err = r.evaluateTopHoldingQuarter(language, db, thisQuarterHoldings)
 		if err != nil {
 			return nil, applicationError.Wrap(err)
 		}
@@ -76,7 +78,7 @@ type RankParam struct {
 	Shares  int
 }
 
-func (r *RankEvaluator) evaluateTopBuyQuarter(db *gorm.DB, thisQuarterHoldings, lastQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
+func (r *RankEvaluator) evaluateTopBuyQuarter(language string, db *gorm.DB, thisQuarterHoldings, lastQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
 	thisQuarterHoldingGroups := util.GroupBy(thisQuarterHoldings, func(holding *holdingDomain.Holding) string {
 		return holding.Cik
 	})
@@ -160,7 +162,7 @@ func (r *RankEvaluator) evaluateTopBuyQuarter(db *gorm.DB, thisQuarterHoldings, 
 			i+1,
 			rankParam.Value,
 			tickers,
-			stockGroup[0].Name,
+			r.translator.Translate("companies", language, stockGroup[0].Name, true),
 			"*",
 		)
 
@@ -174,7 +176,7 @@ func (r *RankEvaluator) evaluateTopBuyQuarter(db *gorm.DB, thisQuarterHoldings, 
 	return ranks, nil
 }
 
-func (r *RankEvaluator) evaluateTopSellQuarter(db *gorm.DB, thisQuarterHoldings, lastQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
+func (r *RankEvaluator) evaluateTopSellQuarter(language string, db *gorm.DB, thisQuarterHoldings, lastQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
 	thisQuarterHoldingGroups := util.GroupBy(thisQuarterHoldings, func(holding *holdingDomain.Holding) string {
 		return holding.Cik
 	})
@@ -258,7 +260,7 @@ func (r *RankEvaluator) evaluateTopSellQuarter(db *gorm.DB, thisQuarterHoldings,
 			i+1,
 			rankParam.Value,
 			tickers,
-			stockGroup[0].Name,
+			r.translator.Translate("companies", language, stockGroup[0].Name, true),
 			"*",
 		)
 
@@ -272,7 +274,7 @@ func (r *RankEvaluator) evaluateTopSellQuarter(db *gorm.DB, thisQuarterHoldings,
 	return ranks, nil
 }
 
-func (r *RankEvaluator) evaluateTopHoldingQuarter(db *gorm.DB, thisQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
+func (r *RankEvaluator) evaluateTopHoldingQuarter(language string, db *gorm.DB, thisQuarterHoldings []*holdingDomain.Holding) (ranks []*rank.Rank, err error) {
 	thisQuarterHoldingGroups := util.GroupBy(thisQuarterHoldings, func(holding *holdingDomain.Holding) string {
 		return holding.Cik
 	})
@@ -335,7 +337,7 @@ func (r *RankEvaluator) evaluateTopHoldingQuarter(db *gorm.DB, thisQuarterHoldin
 			i+1,
 			rankParam.Value,
 			tickers,
-			stockGroup[0].Name,
+			r.translator.Translate("companies", language, stockGroup[0].Name, true),
 			"*",
 		)
 

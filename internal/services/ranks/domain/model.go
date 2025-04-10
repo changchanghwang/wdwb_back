@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/changchanghwang/wdwb_back/internal/libs/ddd"
 	applicationError "github.com/changchanghwang/wdwb_back/pkg/application-error"
 	"github.com/google/uuid"
 )
@@ -30,21 +29,16 @@ var RankTypes = []RankType{
 }
 
 type Rank struct {
-	ddd.Aggregate
-	Id            uuid.UUID `json:"id" gorm:"column:id; type:varchar(36); primaryKey"`
-	Type          RankType  `json:"type" gorm:"type:int; not null;"`
-	Year          int       `json:"year" gorm:"type:int; not null;"`
-	Quarter       int       `json:"quarter" gorm:"type:int; not null;"`
-	Rank          int       `json:"rank" gorm:"type:int; not null;"`
-	Value         int       `json:"value" gorm:"type:bigint; not null;"`
-	Tickers       []string  `json:"tickers" gorm:"type:text;serializer:json"`
-	Name          string    `json:"name" gorm:"type:varchar(255); not null;"`
-	InvestorId    string    `json:"investorId" gorm:"type:varchar(36); column:investorId; not null;"`
-	LastUpdatedAt time.Time `json:"lastUpdatedAt" gorm:"type:datetime; column:lastUpdatedAt; not null;"`
-}
-
-func (s *Rank) TableName() string {
-	return "rank"
+	Id            uuid.UUID `json:"id"`
+	Type          RankType  `json:"type"`
+	Year          int       `json:"year"`
+	Quarter       int       `json:"quarter"`
+	Rank          int       `json:"rank"`
+	Value         int       `json:"value"`
+	Tickers       []string  `json:"tickers"`
+	Name          string    `json:"name"`
+	InvestorId    string    `json:"investorId"`
+	LastUpdatedAt time.Time `json:"lastUpdatedAt"`
 }
 
 func New(rankType RankType, year, quarter, rank, value int, tickers []string, name, investorId string) (*Rank, error) {

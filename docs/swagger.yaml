@@ -6,6 +6,58 @@ definitions:
         example: error message
         type: string
     type: object
+  commands.RankCommand:
+    properties:
+      quarter:
+        description: 1, 2, 3, 4 optional
+        type: integer
+      year:
+        description: "2024"
+        type: integer
+    required:
+    - year
+    type: object
+  domain.Rank:
+    properties:
+      id:
+        type: string
+      investorId:
+        type: string
+      lastUpdatedAt:
+        type: string
+      name:
+        type: string
+      quarter:
+        type: integer
+      rank:
+        type: integer
+      tickers:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/domain.RankType'
+      value:
+        type: integer
+      year:
+        type: integer
+    type: object
+  domain.RankType:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
+    x-enum-varnames:
+    - TopBuyQuarter
+    - TopSellQuarter
+    - TopHoldingQuarter
+    - TopBuyYear
+    - TopSellYear
+    - TopHoldingYear
   response.HoldingListResponse:
     properties:
       count:
@@ -18,8 +70,8 @@ definitions:
   response.HoldingRetrieveResponse:
     properties:
       id:
-        description: holding id
-        example: 123e4567-e89b-12d3-a456-426614174000
+        description: holding cik
+        example: "0001067983"
         type: string
       investorId:
         description: investor id
@@ -37,6 +89,10 @@ definitions:
         description: number of stock shares
         example: 1000
         type: integer
+      translated:
+        description: whether the holding name is translated
+        example: true
+        type: boolean
       value:
         description: total amount of holding value
         example: 1000000
@@ -77,6 +133,43 @@ definitions:
         description: investor name
         example: John Doe
         type: string
+      url:
+        description: investor image url
+        example: https://s3.amazonaws.com/image/image.png
+        type: string
+    type: object
+  response.RankResponse:
+    properties:
+      topBuyQuarter:
+        description: buy ranking per quarter
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
+      topBuyYear:
+        description: buy ranking per year
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
+      topHoldingQuarter:
+        description: holding ranking per quarter
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
+      topHoldingYear:
+        description: holding ranking per year
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
+      topSellQuarter:
+        description: sell ranking per quarter
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
+      topSellYear:
+        description: sell ranking per year
+        items:
+          $ref: '#/definitions/domain.Rank'
+        type: array
     type: object
 info:
   contact:
@@ -222,4 +315,53 @@ paths:
       summary: Retrieve investor
       tags:
       - investors
+  /ranks:
+    get:
+      consumes:
+      - application/json
+      description: Rank
+      parameters:
+      - description: Rank command
+        in: body
+        name: command
+        required: true
+        schema:
+          $ref: '#/definitions/commands.RankCommand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieve investor
+          schema:
+            $ref: '#/definitions/response.RankResponse'
+        "400":
+          description: Bad request
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                errorMessage:
+                  type: string
+              type: object
+        "404":
+          description: Not found
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                errorMessage:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - $ref: '#/definitions/base.ErrorResponse'
+            - properties:
+                errorMessage:
+                  type: string
+              type: object
+      summary: Rank
+      tags:
+      - ranks
 swagger: "2.0"

@@ -20,7 +20,6 @@ import (
 	presentation3 "github.com/changchanghwang/wdwb_back/internal/services/investors/presentation"
 	application5 "github.com/changchanghwang/wdwb_back/internal/services/ranks/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/ranks/domain/services"
-	infrastructure5 "github.com/changchanghwang/wdwb_back/internal/services/ranks/infrastructure"
 	presentation5 "github.com/changchanghwang/wdwb_back/internal/services/ranks/presentation"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/application"
 	"github.com/changchanghwang/wdwb_back/internal/services/stocks/infrastructure"
@@ -47,9 +46,8 @@ func InitializeServer() (*server.Server, error) {
 	investorController := presentation3.New(investorService)
 	holdingService := application4.New(holdingRepository, stockRepository, translator, gormDB, secClientSecClient)
 	holdingController := presentation4.New(holdingService)
-	rankRepository := infrastructure5.New(gormDB)
-	rankEvaluator := services.NewRankEvaluator(holdingRepository, stockRepository)
-	rankService := application5.New(rankRepository, holdingRepository, rankEvaluator, gormDB)
+	rankEvaluator := services.NewRankEvaluator(holdingRepository, stockRepository, translator)
+	rankService := application5.New(holdingRepository, rankEvaluator, gormDB)
 	rankController := presentation5.New(rankService)
 	route := server.NewRoute(stockController, syncController, investorController, holdingController, rankController)
 	serverServer := server.New(route, translator)
