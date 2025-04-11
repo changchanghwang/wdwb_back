@@ -271,13 +271,17 @@ const docTemplate = `{
                 "summary": "Rank",
                 "parameters": [
                     {
-                        "description": "Rank command",
-                        "name": "command",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/commands.RankCommand"
-                        }
+                        "type": "integer",
+                        "description": "1, 2, 3, 4 optional",
+                        "name": "quarter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "2024",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -352,22 +356,6 @@ const docTemplate = `{
                 "errorMessage": {
                     "type": "string",
                     "example": "error message"
-                }
-            }
-        },
-        "commands.RankCommand": {
-            "type": "object",
-            "required": [
-                "year"
-            ],
-            "properties": {
-                "quarter": {
-                    "description": "1, 2, 3, 4 optional",
-                    "type": "integer"
-                },
-                "year": {
-                    "description": "2024",
-                    "type": "integer"
                 }
             }
         },

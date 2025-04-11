@@ -6,17 +6,6 @@ definitions:
         example: error message
         type: string
     type: object
-  commands.RankCommand:
-    properties:
-      quarter:
-        description: 1, 2, 3, 4 optional
-        type: integer
-      year:
-        description: "2024"
-        type: integer
-    required:
-    - year
-    type: object
   domain.Rank:
     properties:
       id:
@@ -321,12 +310,15 @@ paths:
       - application/json
       description: Rank
       parameters:
-      - description: Rank command
-        in: body
-        name: command
+      - description: 1, 2, 3, 4 optional
+        in: query
+        name: quarter
+        type: integer
+      - description: "2024"
+        in: query
+        name: year
         required: true
-        schema:
-          $ref: '#/definitions/commands.RankCommand'
+        type: integer
       produces:
       - application/json
       responses:

@@ -28,7 +28,7 @@ func (c *RankController) Route(r fiber.Router) {
 // @Tags ranks
 // @Accept json
 // @Produce json
-// @Param command body commands.RankCommand true "Rank command"
+// @Param command query commands.RankCommand true "Rank command"
 // @Success 200 {object} response.RankResponse "Successfully retrieve investor"
 // @Failure 400 {object} base.ErrorResponse{errorMessage=string} "Bad request"
 // @Failure 404 {object} base.ErrorResponse{errorMessage=string} "Not found"
